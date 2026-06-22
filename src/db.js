@@ -1,20 +1,23 @@
 import mongoose from 'mongoose';
 
-// Tandaan: Palitan mo ang <db_password> ng totoong password mo, gar!
-const MONGODB_URI = 'mongodb+srv://mbvargas91_db_user:Markminard1@cluster0.2oeqdzm.mongodb.net/?appName=szk-appointment';
+const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
-  throw new Error('Pakilagay ang MONGODB_URI sa src/db.js, gar!');
+  throw new Error('MONGODB_URI is not defined in .env.local');
 }
 
+let cached = global.mongoose || { conn: null, promise: null };
+global.mongoose = cached;
+
 export async function connectDB() {
+  if (cached.conn) return cached.conn;
 
-  if (mongoose.connection.readyState >= 1) return;
-
-  try {
-    await mongoose.connect(MONGODB_URI);
-    console.log("Connected to MongoDB!");
-  } catch (error) {
-    console.error("MongoDB connection error:", error);
+  if (!cached.promise) {
+    cached.promise = mongoose.connect(MONGODB_URI, {
+      serverSelectionTimeoutMS: 10000,
+    });
   }
+
+  cached.conn = await cached.promise;
+  return cached.conn;
 }

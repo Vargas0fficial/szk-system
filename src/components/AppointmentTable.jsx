@@ -33,7 +33,7 @@ export default function AppointmentTable({ data, onRefresh }) {
 
     const executeDelete = async (isRetry = false) => {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3000); // 3-second quick cutoff
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
 
       try {
         const id = deleteTarget._id?.toString() || deleteTarget._id;
@@ -56,8 +56,8 @@ export default function AppointmentTable({ data, onRefresh }) {
           if (typeof window !== 'undefined' && window.__forceSilentStreamReconnect) {
             window.__forceSilentStreamReconnect();
           }
-          await new Promise(r => setTimeout(r, 500));
-          await executeDelete(true); // Silent second chance
+          await new Promise(r => setTimeout(r, 1000));
+          await executeDelete(true);
         } else {
           setDeleteTarget(null);
           setDeleting(false);
@@ -70,12 +70,14 @@ export default function AppointmentTable({ data, onRefresh }) {
   };
 
   const handleStatusChange = async (id, newStatus) => {
+    if (updatingStatus !== null) return;
+
     setOpenStatusId(null);
     setUpdatingStatus(id);
 
     const executeUpdate = async (isRetry = false) => {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3000); // 3-second rapid timeout
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
 
       try {
         const res = await fetch('/api/appointments/stream', {
@@ -99,15 +101,16 @@ export default function AppointmentTable({ data, onRefresh }) {
             window.__forceSilentStreamReconnect();
           }
           await new Promise(r => setTimeout(r, 400));
-          await executeUpdate(true); // Auto-fire second request instantly
-        } else {
-          setUpdatingStatus(null);
+          await executeUpdate(true);
         }
       }
     };
 
-    await executeUpdate();
-    setUpdatingStatus(null);
+    try {
+      await executeUpdate();
+    } finally {
+      setUpdatingStatus(null);
+    }
   };
 
   const filtered = data.filter((item) => {
@@ -230,9 +233,24 @@ export default function AppointmentTable({ data, onRefresh }) {
                             }
                           }}
                           disabled={updatingStatus === item._id}
-                          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[10px] font-semibold cursor-pointer disabled:opacity-50 ${STATUS_STYLES[status] || STATUS_STYLES['Pending']}`}
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[10px] font-semibold cursor-pointer disabled:opacity-50 transition-all ${STATUS_STYLES[status] || STATUS_STYLES['Pending']}`}
                         >
-                          {updatingStatus === item._id ? 'Updating...' : status}
+                          <span>{updatingStatus === item._id ? 'Updating...' : status}</span>
+
+                          {updatingStatus !== item._id && (
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                              className="w-3 h-3 opacity-70"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          )}
                         </button>
 
                         {openStatusId === item._id && (
@@ -273,7 +291,13 @@ export default function AppointmentTable({ data, onRefresh }) {
           <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm mx-4">
             <h3 className="text-sm font-bold text-slate-800">Delete Appointment</h3>
             <p className="text-xs text-gray-600 my-3 bg-gray-50 rounded-lg p-3 border border-gray-100">
-              Are you sure you want to delete <span className="font-bold text-slate-800 uppercase">{deleteTarget.customer}</span>?
+              Are you sure you want to delete{' '}
+              <span className="font-bold text-slate-800 uppercase">{deleteTarget.customer}</span>?
+              <br />
+              <span className="text-gray-400">Conduction Sticker: </span>
+              <span className="font-mono font-semibold text-slate-700">{deleteTarget.sticker}</span>
+              <span className="text-gray-400"> · Vehicle: </span>
+              <span className="font-semibold text-slate-700">{deleteTarget.model}</span>
             </p>
             <div className="flex justify-end space-x-2">
               <button onClick={() => setDeleteTarget(null)} disabled={deleting} className="px-4 py-2 text-xs font-semibold text-gray-600 border border-gray-200 rounded-lg bg-gray-50">Cancel</button>
