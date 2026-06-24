@@ -23,9 +23,7 @@ export default function AppointmentTable({ data, onRefresh }) {
   const [updatingStatus, setUpdatingStatus] = useState(null);
   const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0 });
 
-  const handleDeleteClick = (item) => {
-    setDeleteTarget(item);
-  };
+  const handleDeleteClick = (item) => setDeleteTarget(item);
 
   const handleDeleteConfirm = async () => {
     if (!deleteTarget) return;
@@ -188,14 +186,14 @@ export default function AppointmentTable({ data, onRefresh }) {
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-[#003399] text-white text-[10px] font-bold uppercase tracking-wider">
-              <th className="px-4 py-3">Appointment Date & Time</th>
-              <th className="px-4 py-3">Customer Name</th>
-              <th className="px-4 py-3">Conduction Sticker</th>
-              <th className="px-4 py-3">Vehicle Model</th>
-              <th className="px-4 py-3">Plate Number</th>
-              <th className="px-4 py-3">Service Type</th>
-              <th className="px-4 py-3">Advisor</th>
-              <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3 text-center">Appointment Date & Time</th>
+              <th className="px-4 py-3 text-center">Customer Name</th>
+              <th className="px-4 py-3 text-center">Conduction Sticker</th>
+              <th className="px-4 py-3 text-center">Vehicle Model</th>
+              <th className="px-4 py-3 text-center">Plate Number</th>
+              <th className="px-4 py-3 text-center">Service Type</th>
+              <th className="px-4 py-3 text-center">Advisor</th>
+              <th className="px-4 py-3 text-center">Status</th>
               <th className="px-4 py-3 text-center">Action</th>
             </tr>
           </thead>
@@ -210,15 +208,17 @@ export default function AppointmentTable({ data, onRefresh }) {
                 const status = item.status || 'Pending';
                 return (
                   <tr key={item._id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-4 py-3 text-gray-700 font-medium">{date}<br /><span className="text-[10px] text-gray-400">{time}</span></td>
-                    <td className="px-4 py-3 font-bold text-gray-800 uppercase">{item.customer}</td>
-                    <td className="px-4 py-3 font-mono text-gray-600">{item.sticker}</td>
-                    <td className="px-4 py-3 text-gray-600">{item.model}</td>
-                    <td className="px-4 py-3 font-mono text-gray-600">{item.plate}</td>
-                    <td className="px-4 py-3 text-gray-600">{item.serviceType || 'PMS'}</td>
-                    <td className="px-4 py-3 text-gray-600">{item.advisor || '—'}</td>
+                    <td className="px-4 py-3 text-center text-gray-700 font-medium">
+                      {date}<br /><span className="text-[10px] text-gray-400">{time}</span>
+                    </td>
+                    <td className="px-4 py-3 text-center font-bold text-gray-800 uppercase">{item.customer}</td>
+                    <td className="px-4 py-3 text-center font-mono text-gray-600">{item.sticker}</td>
+                    <td className="px-4 py-3 text-center text-gray-600">{item.model}</td>
+                    <td className="px-4 py-3 text-center font-mono text-gray-600">{item.plate}</td>
+                    <td className="px-4 py-3 text-center text-gray-600">{item.serviceType || 'PMS'}</td>
+                    <td className="px-4 py-3 text-center text-gray-600">{item.advisor || '—'}</td>
 
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 text-center">
                       <div className="relative inline-block">
                         <button
                           type="button"

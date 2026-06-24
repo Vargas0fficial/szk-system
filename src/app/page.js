@@ -26,7 +26,6 @@ export default function PublicPage() {
     return () => clearInterval(timer);
   }, []);
 
-  // REALTIME STREAM WITH AUTOMATIC SILENT RECOVERY
   useEffect(() => {
     let eventSource = null;
     let watchdogTimer = null;
@@ -41,7 +40,7 @@ export default function PublicPage() {
         watchdogTimer = setTimeout(() => {
           console.log("Heartbeat lost. Automatically reconnecting stream in background...");
           connectStream();
-        }, 35000); // 35 seconds idle check
+        }, 35000);
       };
 
       resetWatchdog();
@@ -65,7 +64,6 @@ export default function PublicPage() {
       };
     };
 
-    // Global hook para sa table component para makapag-silent reset kapag na-zombie ang network
     window.__forceSilentStreamReconnect = () => {
       console.log("Table requested a silent stream reset...");
       connectStream();
@@ -147,13 +145,13 @@ export default function PublicPage() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-[#003399] text-white text-[10px] font-bold uppercase tracking-wider">
-                  <th className="px-4 py-3">Appointment Date & Time</th>
-                  <th className="px-4 py-3">Customer Name</th>
-                  <th className="px-4 py-3">Conduction Sticker</th>
-                  <th className="px-4 py-3">Vehicle Model</th>
-                  <th className="px-4 py-3">Plate Number</th>
-                  <th className="px-4 py-3">Service Type</th>
-                  <th className="px-4 py-3">Advisor</th>
+                  <th className="px-4 py-3 text-center">Appointment Date & Time</th>
+                  <th className="px-4 py-3 text-center">Customer Name</th>
+                  <th className="px-4 py-3 text-center">Conduction Sticker</th>
+                  <th className="px-4 py-3 text-center">Vehicle Model</th>
+                  <th className="px-4 py-3 text-center">Plate Number</th>
+                  <th className="px-4 py-3 text-center">Service Type</th>
+                  <th className="px-4 py-3 text-center">Advisor</th>
                   <th className="px-4 py-3 text-center">Status</th>
                 </tr>
               </thead>
@@ -172,16 +170,16 @@ export default function PublicPage() {
                     const formatted = formatDateTime(item);
                     return (
                       <tr key={item._id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-4 py-3 text-gray-700 font-medium">
+                        <td className="px-4 py-3 text-center text-gray-700 font-medium">
                           {formatted.date}<br />
                           <span className="text-[10px] text-gray-400">{formatted.time}</span>
                         </td>
-                        <td className="px-4 py-3 font-bold text-gray-800 uppercase">{item.customer}</td>
-                        <td className="px-4 py-3 font-mono text-gray-600">{item.sticker}</td>
-                        <td className="px-4 py-3 text-gray-600">{item.model || '—'}</td>
-                        <td className="px-4 py-3 font-mono text-gray-600">{item.plate || '—'}</td>
-                        <td className="px-4 py-3 text-gray-600">{item.serviceType || 'PMS'}</td>
-                        <td className="px-4 py-3 text-gray-600">{item.advisor || '—'}</td>
+                        <td className="px-4 py-3 text-center font-bold text-gray-800 uppercase">{item.customer}</td>
+                        <td className="px-4 py-3 text-center font-mono text-gray-600">{item.sticker}</td>
+                        <td className="px-4 py-3 text-center text-gray-600">{item.model || '—'}</td>
+                        <td className="px-4 py-3 text-center font-mono text-gray-600">{item.plate || '—'}</td>
+                        <td className="px-4 py-3 text-center text-gray-600">{item.serviceType || 'PMS'}</td>
+                        <td className="px-4 py-3 text-center text-gray-600">{item.advisor || '—'}</td>
                         <td className="px-4 py-3 text-center">
                           <span className={`inline-block px-2.5 py-0.5 rounded text-[10px] font-semibold ${STATUS_STYLES[status] || STATUS_STYLES['Pending']}`}>
                             {status}
