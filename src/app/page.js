@@ -11,7 +11,7 @@ const STATUS_STYLES = {
   Cancelled: 'bg-red-100 text-red-700 border border-red-200',
 };
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 5;
 
 export default function PublicPage() {
   const [appointments, setAppointments] = useState([]);
