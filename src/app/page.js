@@ -1,7 +1,7 @@
 "use client";
 
 export const dynamic = "force-dynamic";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 const STATUS_STYLES = {
   Confirmed: 'bg-green-100 text-green-700 border border-green-200',
@@ -12,11 +12,13 @@ const STATUS_STYLES = {
 };
 
 const PAGE_SIZE = 5;
+const SLIDE_INTERVAL = 15000; // 15 seconds
 
 export default function PublicPage() {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
+  const [fade, setFade] = useState(true);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [mounted, setMounted] = useState(false);
 
@@ -79,21 +81,30 @@ export default function PublicPage() {
   }, []);
 
   const totalPages = Math.max(1, Math.ceil(appointments.length / PAGE_SIZE));
-  const paginated = appointments.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  const pageNumbers = () => {
-    const pages = [];
-    if (totalPages <= 7) {
-      for (let i = 1; i <= totalPages; i++) pages.push(i);
-    } else {
-      pages.push(1);
-      if (page > 3) pages.push('...');
-      for (let i = Math.max(2, page - 1); i <= Math.min(totalPages - 1, page + 1); i++) pages.push(i);
-      if (page < totalPages - 2) pages.push('...');
-      pages.push(totalPages);
-    }
-    return pages;
-  };
+  // Auto slideshow
+  useEffect(() => {
+    if (totalPages <= 1) return;
+
+    const interval = setInterval(() => {
+      // Fade out
+      setFade(false);
+      setTimeout(() => {
+        setPage((p) => (p >= totalPages ? 1 : p + 1));
+        // Fade in
+        setFade(true);
+      }, 600);
+    }, SLIDE_INTERVAL);
+
+    return () => clearInterval(interval);
+  }, [totalPages]);
+
+  // Reset to page 1 if appointments change
+  useEffect(() => {
+    setPage(1);
+  }, [appointments.length]);
+
+  const paginated = appointments.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const formatDateTime = (item) => {
     if (item.date && item.time) {
@@ -123,8 +134,8 @@ export default function PublicPage() {
       </nav>
 
       {/* MAIN - scrollable */}
-      <main className="flex-1 overflow-y-auto">
-        <div className="max-w-7xl mx-auto px-6 py-4 w-full">
+      <main className="flex-1 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6 py-4 w-full h-full flex flex-col">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
             <h1 className="text-2xl font-black text-slate-800 tracking-tight">Appointment List</h1>
             <div className="flex items-center gap-2 text-sm text-slate-600 font-medium select-none min-h-[40px]">
@@ -144,8 +155,15 @@ export default function PublicPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="overflow-x-auto">
+          {/* TABLE with fade transition */}
+          <div
+            className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex-1"
+            style={{
+              opacity: fade ? 1 : 0,
+              transition: 'opacity 0.6s ease-in-out',
+            }}
+          >
+            <div className="overflow-x-auto h-full">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-[#003399] text-white text-[10px] font-bold uppercase tracking-wider">
@@ -200,41 +218,30 @@ export default function PublicPage() {
         </div>
       </main>
 
-      {/* FOOTER - laging naka-pin sa ibaba, kasama ang pagination */}
+      {/* FOOTER */}
       <footer className="bg-white border-t border-slate-200 shadow-[0_-2px_8px_rgba(0,0,0,0.06)] flex-shrink-0">
 
-        {/* PAGINATION ROW */}
-        <div className="border-b border-gray-100 px-6 py-2 flex justify-between items-center max-w-7xl mx-auto w-full">
-          <p className="text-[11px] text-gray-400">
-            Showing {appointments.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1} to{' '}
-            {Math.min(page * PAGE_SIZE, appointments.length)} of {appointments.length} entries
-          </p>
-          <div className="flex items-center space-x-1">
-            <button
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
-              className="px-2 py-1 rounded border border-gray-200 text-xs text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
-            >«</button>
-            {pageNumbers().map((p, i) =>
-              p === '...' ? (
-                <span key={`e-${i}`} className="px-2 py-1 text-xs text-gray-400">...</span>
-              ) : (
-                <button
-                  key={p}
-                  onClick={() => setPage(p)}
-                  className={`px-3 py-1 rounded text-xs font-medium transition-colors ${page === p ? 'bg-[#0054a6] text-white' : 'border border-gray-200 text-gray-600 hover:bg-gray-50'}`}
-                >{p}</button>
-              )
-            )}
-            <button
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
-              className="px-2 py-1 rounded border border-gray-200 text-xs text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
-            >»</button>
+        {/* PAGE INDICATOR dots + count */}
+        {totalPages > 1 && (
+          <div className="border-b border-gray-100 px-6 py-1.5 flex justify-between items-center max-w-7xl mx-auto w-full">
+            <p className="text-[11px] text-gray-400">
+              Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, appointments.length)} of {appointments.length} entries
+            </p>
+            <div className="flex items-center gap-1.5">
+              {Array.from({ length: totalPages }).map((_, i) => (
+                <div
+                  key={i}
+                  className={`rounded-full transition-all duration-500 ${i + 1 === page
+                      ? 'w-4 h-2 bg-[#0054a6]'
+                      : 'w-2 h-2 bg-gray-300'
+                    }`}
+                />
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* BRANDING + BMC ROW */}
+        {/* BRANDING + BMC */}
         <div className="max-w-7xl mx-auto px-6 py-3 flex flex-col sm:flex-row justify-between items-center gap-2">
           <div className="flex items-center gap-3">
             <img src="/szk.png" alt="Suzuki Logo" className="h-6 w-auto object-contain opacity-80" style={{ maxWidth: '80px' }} />
@@ -248,13 +255,13 @@ export default function PublicPage() {
 
           <div className="flex items-center gap-4">
             <p className="text-[11px] text-slate-400 hidden sm:block">
-              Created by: Mark Vargas ❤️
+              Created by: Mark Vargas ❤️ 
             </p>
             <a
               href="https://www.buymeacoffee.com/worstcoder.vargas"
               target="_blank"
               rel="noopener noreferrer"
-              className="transition-all hover:scale-105 active:scale-95 hover:shadow-md rounded-lg inline-block"
+              className="rounded-lg inline-block animate-bounce hover:animate-none hover:scale-110 active:scale-95 transition-transform"
             >
               <img src="/bmc-button-640x180.png" alt="Buy me a coffee" className="h-9 w-auto object-contain" />
             </a>
