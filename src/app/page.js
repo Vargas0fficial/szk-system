@@ -107,7 +107,8 @@ export default function PublicPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f4f7fa] font-sans">
+    <div className="min-h-screen bg-[#f4f7fa] font-sans flex flex-col">
+      {/* NAV */}
       <nav className="bg-white border-b border-slate-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center space-x-3">
@@ -120,7 +121,8 @@ export default function PublicPage() {
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      {/* MAIN */}
+      <main className="max-w-7xl mx-auto px-6 py-8 flex-1 w-full">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
           <h1 className="text-2xl font-black text-slate-800 tracking-tight">Appointment List</h1>
           <div className="flex items-center gap-2 text-sm text-slate-600 font-medium select-none min-h-[40px]">
@@ -225,6 +227,37 @@ export default function PublicPage() {
           </div>
         </div>
       </main>
+
+      {/* FOOTER */}
+      <footer className="bg-white border-t border-slate-200 mt-auto">
+        <div className="max-w-7xl mx-auto px-6 py-5 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <div className="flex items-center gap-3">
+            <img src="/szk.png" alt="Suzuki Logo" className="h-6 w-auto object-contain opacity-80" style={{ maxWidth: '80px' }} />
+            <div>
+              <p className="text-xs font-semibold text-slate-600">Service Management System</p>
+              <p className="text-[10px] text-slate-400">
+                © {new Date().getFullYear()} All rights reserved.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <p className="text-[11px] text-slate-400 hidden sm:block">
+              Created by: Mark Vargas ❤️ 
+            </p>
+
+            {/* Buy Me a Coffee Button */}
+            <a
+              href="https://www.buymeacoffee.com/worstcoder.vargas"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-all hover:scale-105 active:scale-95 hover:shadow-md rounded-lg inline-block"
+            >
+              <img src="/bmc-button-640x180.png" alt="Buy me a coffee" className="h-8 w-auto object-contain" />
+            </a>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
