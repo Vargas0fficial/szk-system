@@ -17,6 +17,8 @@ export default function AppointmentForm({ onSuccess }) {
     remarks: '',
   });
 
+  const [submitting, setSubmitting] = useState(false);
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -31,19 +33,26 @@ export default function AppointmentForm({ onSuccess }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Pointed directly to the live unified endpoint with /stream
-    const response = await fetch('/api/appointments/stream', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(formData),
-    });
+    setSubmitting(true);
 
-    if (response.ok) {
-      alert('Appointment scheduled successfully!');
-      handleClear();
-      onSuccess();
-    } else {
-      alert('Failed to save appointment.');
+    try {
+      const response = await fetch('/api/appointments/stream', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        alert('Appointment scheduled successfully!');
+        handleClear();
+        onSuccess();
+      } else {
+        alert('Failed to save appointment.');
+      }
+    } catch {
+      alert('Something went wrong. Please try again.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -55,10 +64,6 @@ export default function AppointmentForm({ onSuccess }) {
       <h2 className="text-base font-bold text-slate-800 mb-5">New Appointment</h2>
 
       <form onSubmit={handleSubmit}>
-        {/*
-          Layout: 4-column grid where col 4 (Remarks) spans 2 rows.
-          We use a single grid with grid-rows to allow row-span to work.
-        */}
         <div
           className="grid gap-4 mb-4"
           style={{ gridTemplateColumns: 'repeat(4, 1fr)', gridTemplateRows: 'auto auto auto' }}
@@ -173,15 +178,27 @@ export default function AppointmentForm({ onSuccess }) {
           <button
             type="button"
             onClick={handleClear}
-            className="px-6 py-2 border border-gray-200 text-gray-700 font-semibold rounded-lg text-xs bg-gray-50 hover:bg-gray-100 transition-colors"
+            disabled={submitting}
+            className="px-6 py-2 border border-gray-200 text-gray-700 font-semibold rounded-lg text-xs bg-gray-50 hover:bg-gray-100 transition-colors disabled:opacity-50"
           >
             Clear
           </button>
           <button
             type="submit"
-            className="px-6 py-2 bg-[#003399] hover:bg-[#004080] text-white font-semibold rounded-lg text-xs transition-colors shadow-sm"
+            disabled={submitting}
+            className="px-6 py-2 bg-[#003399] hover:bg-[#004080] text-white font-semibold rounded-lg text-xs transition-colors shadow-sm disabled:opacity-70 flex items-center gap-2"
           >
-            Schedule Appointment
+            {submitting ? (
+              <>
+                <svg className="animate-spin w-3.5 h-3.5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                </svg>
+                Scheduling...
+              </>
+            ) : (
+              'Schedule Appointment'
+            )}
           </button>
         </div>
       </form>

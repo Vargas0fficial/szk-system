@@ -7,16 +7,19 @@ export async function GET(request) {
   const encoder = new TextEncoder();
   let changeStream = null;
   let heartbeat = null;
-  let changeTimeout = null; // Holds the reference to clear rapid debounce executions
+  let changeTimeout = null;
+  let isClosed = false; // Flag to prevent enqueue after stream is closed
 
   const stream = new ReadableStream({
     async start(controller) {
       const sendData = (type, data) => {
+        if (isClosed) return; // Stop if already closed
         try {
           controller.enqueue(
             encoder.encode(`data: ${JSON.stringify({ type, data })}\n\n`)
           );
         } catch (e) {
+          isClosed = true;
           console.error("Stream enqueue error, client connection might be closed:", e);
         }
       };
@@ -29,7 +32,7 @@ export async function GET(request) {
         // 2. Initialize Mongoose change stream (MongoDB Atlas Change Stream)
         changeStream = Appointment.watch();
 
-        // FIXED: Added defensive debounce wrapper to manage rapid status switches and clicks safely
+        // Defensive debounce wrapper to manage rapid status switches safely
         changeStream.on("change", () => {
           if (changeTimeout) clearTimeout(changeTimeout);
 
@@ -45,14 +48,20 @@ export async function GET(request) {
 
         changeStream.on("error", (err) => {
           console.error("Change stream execution error:", err);
+          isClosed = true;
           try { controller.close(); } catch (e) { }
         });
 
         // 3. Keep-alive heartbeat interval to prevent browser timeout (15 seconds)
         heartbeat = setInterval(() => {
+          if (isClosed) {
+            clearInterval(heartbeat);
+            return;
+          }
           try {
             controller.enqueue(encoder.encode(`: ping\n\n`));
           } catch (e) {
+            isClosed = true;
             clearInterval(heartbeat);
           }
         }, 15000);
@@ -64,6 +73,7 @@ export async function GET(request) {
     },
     // Triggers when the browser closes the connection or navigates away
     cancel() {
+      isClosed = true; // Mark as closed
       if (heartbeat) clearInterval(heartbeat);
       if (changeTimeout) clearTimeout(changeTimeout);
       if (changeStream) changeStream.close();
@@ -73,6 +83,7 @@ export async function GET(request) {
 
   // Fallback abort signal listener for request handling optimization
   request.signal.addEventListener("abort", () => {
+    isClosed = true; // Mark as closed
     if (heartbeat) clearInterval(heartbeat);
     if (changeTimeout) clearTimeout(changeTimeout);
     if (changeStream) changeStream.close();
@@ -160,7 +171,6 @@ export async function DELETE(request) {
   try {
     await connectDB();
 
-    // Extract the id from the URL query parameters (?id=...)
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
 

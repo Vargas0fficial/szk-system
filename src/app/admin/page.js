@@ -2,21 +2,21 @@
 
 export const dynamic = "force-dynamic";
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import AppointmentForm from '@/components/AppointmentForm';
 import AppointmentTable from '@/components/AppointmentTable';
 
 export default function AdminPage() {
   const [appointments, setAppointments] = useState([]);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
-    // Establish Server-Sent Events connection to the correct stream endpoint
     const eventSource = new EventSource('/api/appointments/stream');
 
     eventSource.onmessage = (event) => {
       try {
         const parsedData = JSON.parse(event.data);
-
-        // Handle initial load and live database updates seamlessly
         if (parsedData.type === 'initial' || parsedData.type === 'update') {
           setAppointments(parsedData.data);
         }
@@ -26,16 +26,14 @@ export default function AdminPage() {
     };
 
     eventSource.onerror = (err) => {
-      console.error("SSE connection connection closed or lost. Attempting reconnection...", err);
+      console.error("SSE connection closed or lost. Attempting reconnection...", err);
     };
 
-    // Clean up connection when user navigates away from the page
     return () => {
       eventSource.close();
     };
   }, []);
 
-  // Fallback function kept to prevent breaking your child components (Form / Table event triggers)
   const fetchAdminData = async () => {
     try {
       const res = await fetch('/api/appointments/stream');
@@ -45,6 +43,17 @@ export default function AdminPage() {
       }
     } catch (err) {
       console.error("Manual database synchronization fallback failed:", err);
+    }
+  };
+
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      router.push('/login');
+    } catch (err) {
+      console.error("Logout failed:", err);
+      setLoggingOut(false);
     }
   };
 
@@ -59,6 +68,18 @@ export default function AdminPage() {
               Service Management System
             </span>
           </div>
+
+          {/* Logout Button */}
+          <button
+            onClick={handleLogout}
+            disabled={loggingOut}
+            className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-red-500 border border-red-200 rounded-lg hover:bg-red-50 transition-all disabled:opacity-50"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            {loggingOut ? 'Logging out...' : 'Logout'}
+          </button>
         </div>
       </nav>
 
