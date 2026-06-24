@@ -111,9 +111,9 @@ export default function PublicPage() {
 
       {/* NAV */}
       <nav className="bg-white border-b border-slate-200 shadow-sm flex-shrink-0">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+        <div className="max-w-7xl mx-auto px-6 py-2 flex justify-between items-center">
           <div className="flex items-center space-x-3">
-            <img src="/szk.png" alt="Logo" className="h-20 w-auto object-contain" />
+            <img src="/szk.png" alt="Logo" className="h-14 w-auto object-contain" />
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest border-l border-slate-300 pl-3">
               Service Management System
             </span>
@@ -124,8 +124,8 @@ export default function PublicPage() {
 
       {/* MAIN - scrollable */}
       <main className="flex-1 overflow-y-auto">
-        <div className="max-w-7xl mx-auto px-6 py-8 w-full">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
+        <div className="max-w-7xl mx-auto px-6 py-4 w-full">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
             <h1 className="text-2xl font-black text-slate-800 tracking-tight">Appointment List</h1>
             <div className="flex items-center gap-2 text-sm text-slate-600 font-medium select-none min-h-[40px]">
               {mounted ? (
@@ -149,14 +149,14 @@ export default function PublicPage() {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-[#003399] text-white text-[10px] font-bold uppercase tracking-wider">
-                    <th className="px-4 py-3 text-center">Appointment Date & Time</th>
-                    <th className="px-4 py-3 text-center">Customer Name</th>
-                    <th className="px-4 py-3 text-center">Conduction Sticker</th>
-                    <th className="px-4 py-3 text-center">Vehicle Model</th>
-                    <th className="px-4 py-3 text-center">Plate Number</th>
-                    <th className="px-4 py-3 text-center">Service Type</th>
-                    <th className="px-4 py-3 text-center">Advisor</th>
-                    <th className="px-4 py-3 text-center">Status</th>
+                    <th className="px-3 py-2 text-center">Appointment Date & Time</th>
+                    <th className="px-3 py-2 text-center">Customer Name</th>
+                    <th className="px-3 py-2 text-center">Conduction Sticker</th>
+                    <th className="px-3 py-2 text-center">Vehicle Model</th>
+                    <th className="px-3 py-2 text-center">Plate Number</th>
+                    <th className="px-3 py-2 text-center">Service Type</th>
+                    <th className="px-3 py-2 text-center">Advisor</th>
+                    <th className="px-3 py-2 text-center">Status</th>
                   </tr>
                 </thead>
                 <tbody className="text-xs divide-y divide-gray-100">
@@ -174,17 +174,17 @@ export default function PublicPage() {
                       const formatted = formatDateTime(item);
                       return (
                         <tr key={item._id} className="hover:bg-gray-50 transition-colors">
-                          <td className="px-4 py-3 text-center text-gray-700 font-medium">
+                          <td className="px-3 py-1.5 text-center text-gray-700 font-medium">
                             {formatted.date}<br />
                             <span className="text-[10px] text-gray-400">{formatted.time}</span>
                           </td>
-                          <td className="px-4 py-3 text-center font-bold text-gray-800 uppercase">{item.customer}</td>
-                          <td className="px-4 py-3 text-center font-mono text-gray-600">{item.sticker}</td>
-                          <td className="px-4 py-3 text-center text-gray-600">{item.model || '—'}</td>
-                          <td className="px-4 py-3 text-center font-mono text-gray-600">{item.plate || '—'}</td>
-                          <td className="px-4 py-3 text-center text-gray-600">{item.serviceType || 'PMS'}</td>
-                          <td className="px-4 py-3 text-center text-gray-600">{item.advisor || '—'}</td>
-                          <td className="px-4 py-3 text-center">
+                          <td className="px-3 py-1.5 text-center font-bold text-gray-800 uppercase">{item.customer}</td>
+                          <td className="px-3 py-1.5 text-center font-mono text-gray-600">{item.sticker}</td>
+                          <td className="px-3 py-1.5 text-center text-gray-600">{item.model || '—'}</td>
+                          <td className="px-3 py-1.5 text-center font-mono text-gray-600">{item.plate || '—'}</td>
+                          <td className="px-3 py-1.5 text-center text-gray-600">{item.serviceType || 'PMS'}</td>
+                          <td className="px-3 py-1.5 text-center text-gray-600">{item.advisor || '—'}</td>
+                          <td className="px-3 py-1.5 text-center">
                             <span className={`inline-block px-2.5 py-0.5 rounded text-[10px] font-semibold ${STATUS_STYLES[status] || STATUS_STYLES['Pending']}`}>
                               {status}
                             </span>
@@ -202,7 +202,7 @@ export default function PublicPage() {
 
       {/* FOOTER - laging naka-pin sa ibaba, kasama ang pagination */}
       <footer className="bg-white border-t border-slate-200 shadow-[0_-2px_8px_rgba(0,0,0,0.06)] flex-shrink-0">
-        
+
         {/* PAGINATION ROW */}
         <div className="border-b border-gray-100 px-6 py-2 flex justify-between items-center max-w-7xl mx-auto w-full">
           <p className="text-[11px] text-gray-400">
@@ -248,7 +248,7 @@ export default function PublicPage() {
 
           <div className="flex items-center gap-4">
             <p className="text-[11px] text-slate-400 hidden sm:block">
-              Created by: Mark Vargas ❤️ 
+              Created by: Mark Vargas
             </p>
             <a
               href="https://www.buymeacoffee.com/worstcoder.vargas"
