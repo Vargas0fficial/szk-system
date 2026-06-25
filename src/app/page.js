@@ -165,9 +165,16 @@ export default function PublicPage() {
         <div className="max-w-7xl mx-auto px-6 py-2 flex justify-between items-center">
           <div className="flex items-center space-x-3">
             <img src="/szk.png" alt="Logo" className="h-14 w-auto object-contain" />
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest border-l border-slate-300 pl-3">
-              Service Management System
-            </span>
+            <div className="border-l border-slate-300 pl-3">
+              <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest block">
+                Service Management System
+              </span>
+              {process.env.NEXT_PUBLIC_BRANCH_NAME && (
+                <span className="text-xs font-bold text-[#003399] uppercase tracking-widest block">
+                  {process.env.NEXT_PUBLIC_BRANCH_NAME}
+                </span>
+              )}
+            </div>
           </div>
           <span className="text-xs font-medium text-slate-400">Live Appointment Status</span>
         </div>
@@ -279,8 +286,9 @@ export default function PublicPage() {
               {Array.from({ length: totalPages }).map((_, i) => (
                 <div
                   key={i}
-                  className={`rounded-full transition-all duration-500 ${i + 1 === page ? 'w-4 h-2 bg-[#0054a6]' : 'w-2 h-2 bg-gray-300'
-                    }`}
+                  className={`rounded-full transition-all duration-500 ${
+                    i + 1 === page ? 'w-4 h-2 bg-[#0054a6]' : 'w-2 h-2 bg-gray-300'
+                  }`}
                 />
               ))}
             </div>
