@@ -1,19 +1,7 @@
 import { connectDB } from "@/db";
 import Appointment from "@/models/Appointment";
 
-export async function GET(request) {
-    // Vercel cron jobs send this user-agent
-    const userAgent = request.headers.get("user-agent") || "";
-    const isVercelCron = userAgent.includes("vercel-cron");
-    const isLocalhost = request.headers.get("host")?.includes("localhost");
-
-    if (!isVercelCron && !isLocalhost) {
-        return new Response(JSON.stringify({ success: false, error: "Unauthorized" }), {
-            status: 401,
-            headers: { "Content-Type": "application/json" },
-        });
-    }
-
+export async function GET() {
     try {
         await connectDB();
         const result = await Appointment.deleteMany({});
