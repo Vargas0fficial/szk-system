@@ -105,7 +105,7 @@ export default function LoginPage() {
                                     onChange={(e) => setUsername(e.target.value)}
                                     onKeyDown={handleKeyDown}
                                     placeholder="Enter your username"
-                                    className="w-full border border-gray-200 rounded-lg pl-10 pr-4 py-3.5 text-base focus:outline-none focus:border-[#003399] focus:ring-1 focus:ring-[#003399] transition-all"
+                                    className="w-full border border-gray-200 rounded-lg pl-10 pr-4 py-3.5 text-base focus:outline-none focus:border-[#003399] focus:ring-1 focus:ring-[#003399] transition-all text-gray-800"
                                 />
                             </div>
                         </div>
@@ -127,7 +127,7 @@ export default function LoginPage() {
                                     onChange={(e) => setPassword(e.target.value)}
                                     onKeyDown={handleKeyDown}
                                     placeholder="Enter your password"
-                                    className="w-full border border-gray-200 rounded-lg pl-10 pr-4 py-3.5 text-base focus:outline-none focus:border-[#003399] focus:ring-1 focus:ring-[#003399] transition-all"
+                                    className="w-full border border-gray-200 rounded-lg pl-10 pr-4 py-3.5 text-base focus:outline-none focus:border-[#003399] focus:ring-1 focus:ring-[#003399] transition-all text-gray-800"
                                 />
                             </div>
                         </div>
