@@ -13,7 +13,7 @@ const STATUS_STYLES = {
 
 const PAGE_SIZE = 5;
 const SLIDE_INTERVAL = 15000; // 15 seconds
-const COMPLETED_HIDE_DELAY = 5000; // 5 seconds bago mag-fade out
+const COMPLETED_HIDE_DELAY = 2000; // 2 seconds bago mag-fade out
 
 export default function PublicPage() {
   const [appointments, setAppointments] = useState([]);
@@ -51,7 +51,7 @@ export default function PublicPage() {
           setTimeout(() => {
             setHidingIds((prev) => new Set([...prev, appt._id]));
 
-            // After 1.5s ng fade animation, fully remove
+            // After 1s ng fade animation, fully remove
             setTimeout(() => {
               setHiddenIds((prev) => new Set([...prev, appt._id]));
               setHidingIds((prev) => {
@@ -59,7 +59,7 @@ export default function PublicPage() {
                 next.delete(appt._id);
                 return next;
               });
-            }, 1500);
+            }, 1000);
           }, COMPLETED_HIDE_DELAY);
         }
       }
@@ -236,7 +236,7 @@ export default function PublicPage() {
                             opacity: isHiding ? 0 : 1,
                             transform: isHiding ? 'translateX(40px)' : 'translateX(0)',
                             transition: isHiding
-                              ? 'opacity 1.5s ease-out, transform 1.5s ease-out'
+                              ? 'opacity 1s ease-out, transform 1s ease-out'
                               : 'opacity 0.3s, transform 0.3s',
                           }}
                         >
