@@ -56,7 +56,7 @@ export default function AppointmentForm({ onSuccess }) {
     }
   };
 
-  const inputClass = "w-full border border-gray-200 rounded-lg p-2 text-xs bg-gray-50 focus:bg-white focus:outline-none focus:border-[#0054a6]";
+  const inputClass = "w-full border border-gray-200 rounded-lg p-2 text-xs bg-gray-50 focus:bg-white focus:outline-none focus:border-[#0054a6] text-gray-800";
   const labelClass = "text-xs font-semibold text-gray-600 block mb-1";
 
   return (
