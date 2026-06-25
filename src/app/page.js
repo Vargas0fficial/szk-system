@@ -1,7 +1,7 @@
 "use client";
 
 export const dynamic = "force-dynamic";
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 const STATUS_STYLES = {
   Confirmed: 'bg-green-100 text-green-700 border border-green-200',
@@ -13,6 +13,7 @@ const STATUS_STYLES = {
 
 const PAGE_SIZE = 5;
 const SLIDE_INTERVAL = 15000; // 15 seconds
+const COMPLETED_HIDE_DELAY = 5000; // 5 seconds bago mag-fade out
 
 export default function PublicPage() {
   const [appointments, setAppointments] = useState([]);
@@ -21,12 +22,51 @@ export default function PublicPage() {
   const [fade, setFade] = useState(true);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [mounted, setMounted] = useState(false);
+  const [hidingIds, setHidingIds] = useState(new Set()); // nag-fa-fade out na
+  const [hiddenIds, setHiddenIds] = useState(new Set()); // fully hidden na
+  const prevAppointmentsRef = useRef([]);
 
   useEffect(() => {
     setMounted(true);
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  // Detect newly Completed appointments at i-fade out sila
+  useEffect(() => {
+    const prev = prevAppointmentsRef.current;
+
+    appointments.forEach((appt) => {
+      if (
+        appt.status === 'Completed' &&
+        !hiddenIds.has(appt._id) &&
+        !hidingIds.has(appt._id)
+      ) {
+        const wasAlreadyCompleted = prev.find(
+          (p) => p._id === appt._id && p.status === 'Completed'
+        );
+
+        if (!wasAlreadyCompleted) {
+          // Bagong naging Completed — mag-fade out after 5 seconds
+          setTimeout(() => {
+            setHidingIds((prev) => new Set([...prev, appt._id]));
+
+            // After 1.5s ng fade animation, fully remove
+            setTimeout(() => {
+              setHiddenIds((prev) => new Set([...prev, appt._id]));
+              setHidingIds((prev) => {
+                const next = new Set(prev);
+                next.delete(appt._id);
+                return next;
+              });
+            }, 1500);
+          }, COMPLETED_HIDE_DELAY);
+        }
+      }
+    });
+
+    prevAppointmentsRef.current = appointments;
+  }, [appointments]);
 
   useEffect(() => {
     let eventSource = null;
@@ -80,18 +120,18 @@ export default function PublicPage() {
     };
   }, []);
 
-  const totalPages = Math.max(1, Math.ceil(appointments.length / PAGE_SIZE));
+  // Filter out fully hidden appointments
+  const visibleAppointments = appointments.filter((a) => !hiddenIds.has(a._id));
+  const totalPages = Math.max(1, Math.ceil(visibleAppointments.length / PAGE_SIZE));
 
   // Auto slideshow
   useEffect(() => {
     if (totalPages <= 1) return;
 
     const interval = setInterval(() => {
-      // Fade out
       setFade(false);
       setTimeout(() => {
         setPage((p) => (p >= totalPages ? 1 : p + 1));
-        // Fade in
         setFade(true);
       }, 600);
     }, SLIDE_INTERVAL);
@@ -99,12 +139,12 @@ export default function PublicPage() {
     return () => clearInterval(interval);
   }, [totalPages]);
 
-  // Reset to page 1 if appointments change
+  // Reset to page 1 kapag nagbago ang bilang ng appointments
   useEffect(() => {
     setPage(1);
-  }, [appointments.length]);
+  }, [visibleAppointments.length]);
 
-  const paginated = appointments.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const paginated = visibleAppointments.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const formatDateTime = (item) => {
     if (item.date && item.time) {
@@ -133,7 +173,7 @@ export default function PublicPage() {
         </div>
       </nav>
 
-      {/* MAIN - scrollable */}
+      {/* MAIN */}
       <main className="flex-1 overflow-hidden">
         <div className="max-w-7xl mx-auto px-6 py-4 w-full h-full flex flex-col">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
@@ -155,13 +195,10 @@ export default function PublicPage() {
             </div>
           </div>
 
-          {/* TABLE with fade transition */}
+          {/* TABLE with page fade transition */}
           <div
             className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex-1"
-            style={{
-              opacity: fade ? 1 : 0,
-              transition: 'opacity 0.6s ease-in-out',
-            }}
+            style={{ opacity: fade ? 1 : 0, transition: 'opacity 0.6s ease-in-out' }}
           >
             <div className="overflow-x-auto h-full">
               <table className="w-full text-left border-collapse">
@@ -190,8 +227,19 @@ export default function PublicPage() {
                     paginated.map((item) => {
                       const status = item.status || 'Pending';
                       const formatted = formatDateTime(item);
+                      const isHiding = hidingIds.has(item._id);
                       return (
-                        <tr key={item._id} className="hover:bg-gray-50 transition-colors">
+                        <tr
+                          key={item._id}
+                          className="hover:bg-gray-50 transition-colors"
+                          style={{
+                            opacity: isHiding ? 0 : 1,
+                            transform: isHiding ? 'translateX(40px)' : 'translateX(0)',
+                            transition: isHiding
+                              ? 'opacity 1.5s ease-out, transform 1.5s ease-out'
+                              : 'opacity 0.3s, transform 0.3s',
+                          }}
+                        >
                           <td className="px-3 py-1.5 text-center text-gray-700 font-medium">
                             {formatted.date}<br />
                             <span className="text-[10px] text-gray-400">{formatted.time}</span>
@@ -225,15 +273,13 @@ export default function PublicPage() {
         {totalPages > 1 && (
           <div className="border-b border-gray-100 px-6 py-1.5 flex justify-between items-center max-w-7xl mx-auto w-full">
             <p className="text-[11px] text-gray-400">
-              Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, appointments.length)} of {appointments.length} entries
+              Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, visibleAppointments.length)} of {visibleAppointments.length} entries
             </p>
             <div className="flex items-center gap-1.5">
               {Array.from({ length: totalPages }).map((_, i) => (
                 <div
                   key={i}
-                  className={`rounded-full transition-all duration-500 ${i + 1 === page
-                      ? 'w-4 h-2 bg-[#0054a6]'
-                      : 'w-2 h-2 bg-gray-300'
+                  className={`rounded-full transition-all duration-500 ${i + 1 === page ? 'w-4 h-2 bg-[#0054a6]' : 'w-2 h-2 bg-gray-300'
                     }`}
                 />
               ))}
@@ -255,7 +301,7 @@ export default function PublicPage() {
 
           <div className="flex items-center gap-4">
             <p className="text-[11px] text-slate-400 hidden sm:block">
-              Created by: Mark Vargas ❤️ 
+              Created by: Mark Vargas ❤️
             </p>
             <a
               href="https://www.buymeacoffee.com/worstcoder.vargas"
