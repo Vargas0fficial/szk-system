@@ -1,7 +1,17 @@
 import { connectDB } from "@/db";
 import Appointment from "@/models/Appointment";
 
-export async function GET() {
+export async function GET(request) {
+    const { searchParams } = new URL(request.url);
+    const secret = searchParams.get("secret");
+
+    if (secret !== process.env.CRON_SECRET) {
+        return new Response(JSON.stringify({ success: false, error: "Unauthorized" }), {
+            status: 401,
+            headers: { "Content-Type": "application/json" },
+        });
+    }
+
     try {
         await connectDB();
         const result = await Appointment.deleteMany({});
