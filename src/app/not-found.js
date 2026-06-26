@@ -21,7 +21,7 @@ export default function NotFound() {
                 style={{
                     display: "flex",
                     flexDirection: "row",
-                    alignItems: "center",
+                    alignItems: "flex-end",
                     justifyContent: "center",
                     maxWidth: "1200px",
                     width: "100%",
@@ -30,7 +30,7 @@ export default function NotFound() {
                 }}
             >
                 {/* Left: Text Content */}
-                <div style={{ flex: "0 0 auto", minWidth: "260px", maxWidth: "360px" }}>
+                <div style={{ flex: "0 0 auto", minWidth: "260px", maxWidth: "360px", paddingBottom: "40px" }}>
                     {/* Suzuki Logo */}
                     <div style={{ marginBottom: "32px" }}>
                         <Image
@@ -101,14 +101,14 @@ export default function NotFound() {
                     </Link>
                 </div>
 
-                {/* Right: 404 Car Image — bigger */}
+                {/* Right: 404 Car Image — aligned to bottom */}
                 <div
                     style={{
                         flex: "1 1 auto",
                         minWidth: "340px",
                         display: "flex",
                         justifyContent: "center",
-                        alignItems: "center",
+                        alignItems: "flex-end",
                     }}
                 >
                     <Image
@@ -116,7 +116,7 @@ export default function NotFound() {
                         alt="Broken Suzuki 404 car being repaired"
                         width={750}
                         height={600}
-                        style={{ width: "100%", maxWidth: "750px", height: "auto" }}
+                        style={{ width: "100%", maxWidth: "750px", height: "auto", marginBottom: "-20px" }}
                         priority
                     />
                 </div>
