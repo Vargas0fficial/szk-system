@@ -276,7 +276,7 @@ export default function AppointmentTable({ data, onRefresh }) {
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
               placeholder="Search..."
-              className="border border-gray-200 rounded-lg pl-3 pr-8 py-1.5 text-xs focus:outline-none focus:border-[#0054a6] w-48"
+              className="border border-gray-200 rounded-lg pl-3 pr-8 py-1.5 text-xs focus:outline-none focus:border-[#0054a6] w-48 text-gray-800"
             />
           </div>
           <select
