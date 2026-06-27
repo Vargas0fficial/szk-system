@@ -27,10 +27,15 @@ const getMileageServiceType = (mileage) => {
   if (km <= 40000) return '40K PMS';
   if (km <= 45000) return '45K PMS';
   if (km <= 50000) return '50K PMS';
+  if (km <= 55000) return '55K PMS';
   if (km <= 60000) return '60K PMS';
+  if (km <= 65000) return '65K PMS';
   if (km <= 70000) return '70K PMS';
+  if (km <= 75000) return '75K PMS';
   if (km <= 80000) return '80K PMS';
+  if (km <= 85000) return '85K PMS';
   if (km <= 90000) return '90K PMS';
+  if (km <= 95000) return '95K PMS';
   if (km <= 100000) return '100K PMS';
   return `${Math.round(km / 1000)}K PMS`;
 };
