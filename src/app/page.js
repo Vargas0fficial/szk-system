@@ -350,7 +350,7 @@ export default function PublicPage() {
 
           <div className="flex items-center gap-4">
             <p className="text-[11px] text-slate-400 hidden sm:block">
-              Created by: Mark Vargas ❤️
+              Developer: Mark Vargas ❤️
             </p>
             <a
               href="https://www.buymeacoffee.com/worstcoder.vargas"
