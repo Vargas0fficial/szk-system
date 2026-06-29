@@ -19,24 +19,23 @@ const calculatePageSize = () => {
   if (typeof window === 'undefined') return 5;
   const screenHeight = window.innerHeight;
 
-  // Approximate heights ng fixed elements
-  const navHeight = 90;        // nav
-  const headerHeight = 70;     // "Appointment List" + clock
-  const tableHeaderHeight = 40; // thead row
-  const footerHeight = 120;    // footer + dots
-  const padding = 80;          // py-4 + gaps
+  const navHeight = 90;
+  const headerHeight = 70;
+  const tableHeaderHeight = 45;
+  const footerHeight = 120;
+  const padding = 60;
 
   const rowHeight = screenHeight < 700
-    ? 44   // phone
+    ? 38   // phone
     : screenHeight < 900
-      ? 52   // small desktop
+      ? 44   // tablet / small desktop
       : screenHeight < 1200
-        ? 60   // desktop
-        : 72;  // TV / large monitor
+        ? 52   // desktop
+        : 65;  // TV / large monitor
 
   const available = screenHeight - navHeight - headerHeight - tableHeaderHeight - footerHeight - padding;
   const count = Math.floor(available / rowHeight);
-  return Math.max(3, count);
+  return Math.max(5, count);
 };
 
 export default function PublicPage() {
