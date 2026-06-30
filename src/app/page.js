@@ -48,7 +48,10 @@ export default function PublicPage() {
   const [mounted, setMounted] = useState(false);
   const [hidingIds, setHidingIds] = useState(new Set());
   const [hiddenIds, setHiddenIds] = useState(new Set());
+  const [newIds, setNewIds] = useState(new Set());
   const prevAppointmentsRef = useRef([]);
+  const deletedIdsRef = useRef(new Set()); // tracks ids we've already requested deletion for, avoids duplicate DELETE calls
+  const seenIdsRef = useRef(new Set()); // tracks ids we've already seen, so we only fade-in truly new ones
 
   // Clock
   useEffect(() => {
@@ -67,7 +70,7 @@ export default function PublicPage() {
     return () => window.removeEventListener('resize', update);
   }, []);
 
-  // Detect newly Completed appointments and fade them out
+  // Detect newly Completed appointments, fade them out, then permanently delete from DB
   useEffect(() => {
     const prev = prevAppointmentsRef.current;
 
@@ -75,7 +78,8 @@ export default function PublicPage() {
       if (
         appt.status === 'Completed' &&
         !hiddenIds.has(appt._id) &&
-        !hidingIds.has(appt._id)
+        !hidingIds.has(appt._id) &&
+        !deletedIdsRef.current.has(appt._id)
       ) {
         const wasAlreadyCompleted = prev.find(
           (p) => p._id === appt._id && p.status === 'Completed'
@@ -84,13 +88,28 @@ export default function PublicPage() {
         if (!wasAlreadyCompleted) {
           setTimeout(() => {
             setHidingIds((prev) => new Set([...prev, appt._id]));
-            setTimeout(() => {
+            setTimeout(async () => {
               setHiddenIds((prev) => new Set([...prev, appt._id]));
               setHidingIds((prev) => {
                 const next = new Set(prev);
                 next.delete(appt._id);
                 return next;
               });
+
+              // Permanently delete from DB so it doesn't reappear on reload
+              const deleteId = appt._id?.toString ? appt._id.toString() : appt._id;
+              if (deletedIdsRef.current.has(deleteId)) return;
+              deletedIdsRef.current.add(deleteId);
+
+              try {
+                const res = await fetch(`/api/appointments/stream?id=${deleteId}`, { method: 'DELETE' });
+                if (!res.ok && res.status !== 404) {
+                  // 404 just means another tab/component already deleted it — not a real error
+                  console.error('Failed to delete completed appointment from DB:', res.status);
+                }
+              } catch (err) {
+                console.error('Error deleting completed appointment:', err);
+              }
             }, 1000);
           }, COMPLETED_HIDE_DELAY);
         }
@@ -99,6 +118,34 @@ export default function PublicPage() {
 
     prevAppointmentsRef.current = appointments;
   }, [appointments]);
+
+  // Detect brand-new appointments and mark them for a fade-in animation
+  useEffect(() => {
+    const freshIds = [];
+
+    appointments.forEach((appt) => {
+      if (!seenIdsRef.current.has(appt._id)) {
+        seenIdsRef.current.add(appt._id);
+        freshIds.push(appt._id);
+      }
+    });
+
+    // Skip the very first load (initial SSE snapshot) — only animate appointments
+    // that appear AFTER the page has already rendered once.
+    if (!loading && freshIds.length > 0) {
+      setNewIds((prev) => new Set([...prev, ...freshIds]));
+
+      freshIds.forEach((id) => {
+        setTimeout(() => {
+          setNewIds((prev) => {
+            const next = new Set(prev);
+            next.delete(id);
+            return next;
+          });
+        }, 700);
+      });
+    }
+  }, [appointments, loading]);
 
   // SSE Stream
   useEffect(() => {
@@ -201,6 +248,12 @@ export default function PublicPage() {
 
   return (
     <div className="h-screen bg-[#f4f7fa] font-sans flex flex-col overflow-hidden">
+      <style>{`
+        @keyframes fadeInRow {
+          0%   { opacity: 0; }
+          100% { opacity: 1; }
+        }
+      `}</style>
 
       {/* NAV */}
       <nav className="bg-white border-b border-slate-200 shadow-sm flex-shrink-0">
@@ -277,13 +330,15 @@ export default function PublicPage() {
                       const status = item.status || 'Pending';
                       const formatted = formatDateTime(item);
                       const isHiding = hidingIds.has(item._id);
+                      const isNew = newIds.has(item._id);
                       return (
                         <tr
                           key={item._id}
                           className="hover:bg-gray-50 transition-colors"
                           style={{
-                            opacity: isHiding ? 0 : 1,
+                            opacity: isHiding ? 0 : isNew ? 0 : 1,
                             transform: isHiding ? 'translateX(40px)' : 'translateX(0)',
+                            animation: isNew ? 'fadeInRow 0.6s ease-out forwards' : undefined,
                             transition: isHiding
                               ? 'opacity 1s ease-out, transform 1s ease-out'
                               : 'opacity 0.3s, transform 0.3s',
@@ -350,7 +405,7 @@ export default function PublicPage() {
 
           <div className="flex items-center gap-4">
             <p className="text-[11px] text-slate-400 hidden sm:block">
-             Crafted with ❤️ by <a href="https://facebook.com/worstcoder.vargas" target="_blank" rel="noopener noreferrer" className="text-[#0054a6] font-semibold hover:underline">Mark Vargas</a>
+              Crafted with ❤️ by <a href="https://facebook.com/worstcoder.vargas" target="_blank" rel="noopener noreferrer" className="text-[#0054a6] font-semibold hover:underline">Mark Vargas</a>
             </p>
             <a
               href="https://www.buymeacoffee.com/worstcoder.vargas"
