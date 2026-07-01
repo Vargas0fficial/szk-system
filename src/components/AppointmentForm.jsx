@@ -5,41 +5,10 @@ import { useState } from 'react';
 // Auto-suggest service type based on mileage
 const getMileageServiceType = (mileage) => {
   const km = parseInt(mileage?.toString().replace(/,/g, ''), 10);
-  if (isNaN(km)) return '';
-  if (isNaN(km)) return '';
-  if (km <= 1000) return '1K PMS';
-  if (km <= 5000) return '5K PMS';
-  if (km <= 10000) return '10K PMS';
-  if (km <= 15000) return '15K PMS';
-  if (km <= 20000) return '20K PMS';
-  if (km <= 25000) return '25K PMS';
-  if (km <= 30000) return '30K PMS';
-  if (km <= 35000) return '35K PMS';
-  if (km <= 40000) return '40K PMS';
-  if (km <= 45000) return '45K PMS';
-  if (km <= 50000) return '50K PMS';
-  if (km <= 55000) return '55K PMS'; 
-  if (km <= 60000) return '60K PMS';
-  if (km <= 65000) return '65K PMS'; 
-  if (km <= 70000) return '70K PMS';
-  if (km <= 75000) return '75K PMS';
-  if (km <= 80000) return '80K PMS';
-  if (km <= 85000) return '85K PMS'; 
-  if (km <= 90000) return '90K PMS';
-  if (km <= 95000) return '95K PMS'; 
-  if (km <= 100000) return '100K PMS';
-  if (km <= 105000) return '105K PMS';
-  if (km <= 110000) return '110K PMS';
-  if (km <= 115000) return '115K PMS';
-  if (km <= 120000) return '120K PMS';
-  if (km <= 125000) return '125K PMS';
-  if (km <= 130000) return '130K PMS';
-  if (km <= 135000) return '135K PMS';
-  if (km <= 140000) return '140K PMS';
-  if (km <= 145000) return '145K PMS';
-  if (km <= 150000) return '150K PMS';
-  if (km <= 200000) return '200K PMS';
-  return `${Math.round(km / 1000)}K PMS`;
+  if (isNaN(km) || km <= 0) return '';
+  const step = km <= 1000 ? 1000 : Math.ceil(km / 5000) * 5000;
+  const label = step >= 1000 ? `${step / 1000}K` : `${step}`;
+  return `${label} PMS`;
 };
 
 export default function AppointmentForm({ onSuccess }) {
