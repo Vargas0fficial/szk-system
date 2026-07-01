@@ -21,6 +21,7 @@ export default function AppointmentForm({ onSuccess }) {
     mileage: '',
     serviceType: '',
     advisor: '',
+    technician: '',
     date: '',
     time: '',
     remarks: '',
@@ -36,7 +37,6 @@ export default function AppointmentForm({ onSuccess }) {
       setFormData((prev) => ({
         ...prev,
         mileage: value,
-        // Auto-update service type only if PMS is selected or already a PMS variant
         serviceType: (prev.serviceType === 'PMS' || prev.serviceType.includes('PMS'))
           ? (suggested || prev.serviceType)
           : prev.serviceType,
@@ -50,7 +50,7 @@ export default function AppointmentForm({ onSuccess }) {
     setFormData({
       sticker: '', model: '', customer: '', plate: '',
       contact: '', mileage: '', serviceType: '', advisor: '',
-      date: '', time: '', remarks: '',
+      technician: '', date: '', time: '', remarks: '',
     });
   };
 
@@ -89,7 +89,7 @@ export default function AppointmentForm({ onSuccess }) {
       <form onSubmit={handleSubmit}>
         <div
           className="grid gap-4 mb-4"
-          style={{ gridTemplateColumns: 'repeat(4, 1fr)', gridTemplateRows: 'auto auto auto' }}
+          style={{ gridTemplateColumns: 'repeat(4, 1fr)', gridTemplateRows: 'auto auto auto auto' }}
         >
           {/* Col 1 Row 1 — Conduction Sticker */}
           <div style={{ gridColumn: '1', gridRow: '1' }}>
@@ -119,7 +119,7 @@ export default function AppointmentForm({ onSuccess }) {
             <input type="text" name="model" value={formData.model} onChange={handleChange} placeholder="--" className={inputClass} />
           </div>
 
-          {/* Col 3 Row 1 — Service Type (dropdown, but auto-updates with mileage) */}
+          {/* Col 3 Row 1 — Service Type */}
           <div style={{ gridColumn: '3', gridRow: '1' }}>
             <label className={labelClass}>
               Service Type <span className="text-red-500">*</span>
@@ -135,9 +135,7 @@ export default function AppointmentForm({ onSuccess }) {
               <option value="BODY REPAIR">BODY REPAIR</option>
             </select>
             {formData.serviceType && formData.serviceType.includes('K PMS') && (
-              <p className="text-[10px] text-[#0054a6] mt-1">
-                Auto-updated based on mileage
-              </p>
+              <p className="text-[10px] text-[#0054a6] mt-1">Auto-updated based on mileage</p>
             )}
           </div>
 
@@ -172,8 +170,8 @@ export default function AppointmentForm({ onSuccess }) {
             <input type="date" name="date" value={formData.date} onChange={handleChange} required className={`${inputClass} text-gray-500`} />
           </div>
 
-          {/* Col 4 Row 2–3 — Remarks (spans 2 rows) */}
-          <div style={{ gridColumn: '4', gridRow: '2 / 4' }} className="flex flex-col">
+          {/* Col 4 Row 2–4 — Remarks (spans 3 rows) */}
+          <div style={{ gridColumn: '4', gridRow: '2 / 5' }} className="flex flex-col">
             <label className={labelClass}>Remarks</label>
             <textarea
               name="remarks"
@@ -209,6 +207,18 @@ export default function AppointmentForm({ onSuccess }) {
               Appointment Time <span className="text-red-500">*</span>
             </label>
             <input type="time" name="time" value={formData.time} onChange={handleChange} required className={`${inputClass} text-gray-500`} />
+          </div>
+
+          {/* Col 1 Row 4 — Technician (now same width as other fields, no longer spans 3 columns) */}
+          <div style={{ gridColumn: '1', gridRow: '4' }}>
+            <label className={labelClass}>Technician</label>
+            <select name="technician" value={formData.technician} onChange={handleChange} className={`${inputClass} text-gray-500`}>
+              <option value="">Select technician (optional)</option>
+              {/* Add technician names here */}
+              <option value="MARK CERALDE">MARK CERALDE</option>
+              <option value="BONNY VHON">BONNY VHON</option>
+              <option value="PAUL MUÑOZ">PAUL MUÑOZ</option>
+            </select>
           </div>
         </div>
 

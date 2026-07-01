@@ -313,17 +313,18 @@ export default function PublicPage() {
                     <th className="px-3 py-2 text-center">Plate Number</th>
                     <th className="px-3 py-2 text-center">Service Type</th>
                     <th className="px-3 py-2 text-center">Advisor</th>
+                    <th className="px-3 py-2 text-center">Technician</th>
                     <th className="px-3 py-2 text-center">Status</th>
                   </tr>
                 </thead>
                 <tbody className="text-xs divide-y divide-gray-100">
                   {loading ? (
                     <tr>
-                      <td colSpan="8" className="p-10 text-center text-gray-400 animate-pulse">Loading appointments...</td>
+                      <td colSpan="9" className="p-10 text-center text-gray-400 animate-pulse">Loading appointments...</td>
                     </tr>
                   ) : paginated.length === 0 ? (
                     <tr>
-                      <td colSpan="8" className="p-10 text-center text-gray-400">No appointments found.</td>
+                      <td colSpan="9" className="p-10 text-center text-gray-400">No appointments found.</td>
                     </tr>
                   ) : (
                     paginated.map((item) => {
@@ -354,6 +355,7 @@ export default function PublicPage() {
                           <td className={`${rowPadding} text-center font-mono text-gray-600`}>{item.plate || '—'}</td>
                           <td className={`${rowPadding} text-center text-gray-600`}>{item.serviceType || 'PMS'}</td>
                           <td className={`${rowPadding} text-center text-gray-600`}>{item.advisor || '—'}</td>
+                          <td className={`${rowPadding} text-center text-gray-600`}>{item.technician || '—'}</td>
                           <td className={`${rowPadding} text-center`}>
                             <span className={`inline-block px-2.5 py-0.5 rounded text-[10px] font-semibold ${STATUS_STYLES[status] || STATUS_STYLES['Pending']}`}>
                               {status}
