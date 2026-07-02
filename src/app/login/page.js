@@ -69,7 +69,7 @@ export default function LoginPage() {
             </div>
 
             {/* RIGHT SIDE - Form */}
-            <div className="w-full lg:w-1/2 flex items-center justify-center px-8 bg-white">
+            <div className="w-full lg:w-1/2 flex items-center justify-center px-8 bg-white relative">
                 <div className="w-full max-w-sm">
 
                     {/* Logo */}
@@ -153,6 +153,34 @@ export default function LoginPage() {
                     <p className="text-center text-xs text-gray-400 mt-10">
                         © 2026 Suzuki Motor Corporation. All rights reserved.
                     </p>
+
+                    {/* Buy Me a Coffee */}
+                    <div className="flex flex-col items-center gap-3 mt-8">
+                        <a
+                            href="https://www.buymeacoffee.com/worstcoder.vargas"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="rounded-lg inline-block animate-bounce hover:animate-none hover:scale-110 active:scale-95 transition-transform"
+                        >
+                            <img
+                                src="/bmc-button-640x180.png"
+                                alt="Buy me a coffee"
+                                className="h-9 w-auto object-contain"
+                            />
+                        </a>
+
+                        <p className="text-[11px] text-gray-400">
+                            Crafted with ❤️ by{" "}
+                            <a
+                                href="https://facebook.com/worstcoder.vargas"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-[#0054a6] font-semibold hover:underline"
+                            >
+                                Mark Vargas
+                            </a>
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>

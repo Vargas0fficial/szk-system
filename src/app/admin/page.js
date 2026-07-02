@@ -60,7 +60,7 @@ export default function AdminPage() {
     setLoggingOut(true);
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
-      router.push('/login');
+      router.push('/');
     } catch (err) {
       console.error("Logout failed:", err);
       setLoggingOut(false);
