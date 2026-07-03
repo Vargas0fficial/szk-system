@@ -6,6 +6,7 @@ const STATUS_STYLES = {
   Confirmed: 'bg-green-100 text-green-700 border border-green-200',
   Pending: 'bg-amber-100 text-amber-700 border border-amber-200',
   'On Going': 'bg-blue-100 text-blue-700 border border-blue-200',
+  Reschedule: 'bg-purple-100 text-purple-700 border border-purple-200',
   Completed: 'bg-gray-100 text-gray-600 border border-gray-200',
   Cancelled: 'bg-red-100 text-red-700 border border-red-200',
 };
@@ -383,7 +384,7 @@ export default function AppointmentTable({ data, onRefresh }) {
                             else {
                               const rect = e.currentTarget.getBoundingClientRect();
                               const spaceBelow = window.innerHeight - rect.bottom;
-                              const targetTop = spaceBelow < 170 ? rect.top - 174 : rect.bottom + 4;
+                              const targetTop = spaceBelow < 200 ? rect.top - 204 : rect.bottom + 4;
                               setDropdownPos({ top: targetTop, left: rect.left });
                               setOpenStatusId(item._id);
                             }
