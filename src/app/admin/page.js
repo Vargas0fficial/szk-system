@@ -64,9 +64,16 @@ export default function AdminPage() {
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center space-x-3">
             <img src="/szk.png" alt="Logo" className="h-20 w-auto object-contain" />
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest border-l border-slate-300 pl-3">
-              Service Management System
-            </span>
+            <div className="border-l border-slate-300 pl-3">
+              <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest block">
+                Service Management System
+              </span>
+              {process.env.NEXT_PUBLIC_BRANCH_NAME && (
+                <span className="text-xs font-bold text-[#003399] uppercase tracking-widest block">
+                  {process.env.NEXT_PUBLIC_BRANCH_NAME}
+                </span>
+              )}
+            </div>
           </div>
 
           <div className="flex items-center gap-2">
