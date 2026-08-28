@@ -21,11 +21,21 @@ export async function GET() {
         const { payload } = await jwtVerify(token, secret);
         const branchInfo = BRANCHES[payload.branch] || null;
 
+        if (!branchInfo || !branchInfo.active) {
+            return new Response(JSON.stringify({
+                success: false,
+                error: "This page is not yet accessible. Please pay the developer: Mark Vargas",
+            }), {
+                status: 403,
+                headers: { "Content-Type": "application/json" },
+            });
+        }
+
         return new Response(JSON.stringify({
             success: true,
             username: payload.username,
             branch: payload.branch,
-            branchLabel: branchInfo?.label || payload.branch,
+            branchLabel: branchInfo.label,
         }), {
             status: 200,
             headers: { "Content-Type": "application/json" },

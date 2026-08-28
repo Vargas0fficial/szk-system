@@ -8,6 +8,11 @@ import { cookies } from "next/headers";
 // This is the ONLY source of truth for write operations — a logged-in admin
 // can never write to another branch's data by tampering a request, because
 // the branch never comes from anything the client sends.
+//
+// Also re-checks the branch's "active" flag on every request (not just at
+// login time) — if a branch gets deactivated while an admin already has a
+// valid session/cookie, this stops them from still reading or writing data
+// until their session naturally expires.
 async function resolveBranchFromCookie() {
   const cookieStore = await cookies();
   const token = cookieStore.get("admin_token")?.value;
@@ -16,7 +21,9 @@ async function resolveBranchFromCookie() {
   try {
     const secret = new TextEncoder().encode(process.env.JWT_SECRET);
     const { payload } = await jwtVerify(token, secret);
-    return isValidBranchSlug(payload.branch) ? payload.branch : null;
+    if (!isValidBranchSlug(payload.branch)) return null;
+    if (!BRANCHES[payload.branch].active) return null;
+    return payload.branch;
   } catch {
     return null;
   }
