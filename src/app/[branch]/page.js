@@ -4,6 +4,7 @@ export const dynamic = "force-dynamic";
 import { useState, useEffect, useRef, use } from 'react';
 import Link from 'next/link';
 import { BRANCHES } from '@/branches';
+import NotYetAccessible from '@/components/NotYetAccessible';
 
 const STATUS_STYLES = {
   Confirmed: 'bg-green-100 text-green-700 border border-green-200',
@@ -254,37 +255,7 @@ export default function PublicPage({ params }) {
 
   // Branch exists but isn't live yet (not set up / not paid for).
   if (!branchInfo.active) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f4f7fa] font-sans px-6">
-        <div className="text-center max-w-md">
-          <img src="/szk.png" alt="Suzuki Logo" className="h-14 w-auto object-contain mx-auto mb-6 opacity-70" />
-          <div className="w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-7 h-7 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-            </svg>
-          </div>
-          <h1 className="text-xl font-black text-slate-800 mb-2">{branchInfo.label}</h1>
-          <p className="text-sm text-slate-500 mb-1">This page is not yet accessible.</p>
-          <p className="text-sm text-slate-500 mb-6">
-            Please pay the developer:{' '}
-            <a
-              href="https://facebook.com/worstcoder.vargas"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[#0054a6] font-semibold hover:underline"
-            >
-              Mark Vargas
-            </a>
-          </p>
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-[#003399] hover:text-white hover:border-[#003399] transition-all"
-          >
-            ← Back to Branch List
-          </Link>
-        </div>
-      </div>
-    );
+    return <NotYetAccessible branchLabel={branchInfo.label} />;
   }
 
   return (

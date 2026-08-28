@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import AppointmentForm from '@/components/AppointmentForm';
 import AppointmentTable from '@/components/AppointmentTable';
+import NotYetAccessible from '@/components/NotYetAccessible';
 
 export default function AdminPage() {
   const [appointments, setAppointments] = useState([]);
@@ -84,36 +85,7 @@ export default function AdminPage() {
   // Branch was deactivated (either at login time, or mid-session) —
   // show this instead of the dashboard.
   if (blocked) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f4f7fa] font-sans px-6">
-        <div className="text-center max-w-md">
-          <img src="/szk.png" alt="Suzuki Logo" className="h-14 w-auto object-contain mx-auto mb-6 opacity-70" />
-          <div className="w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-7 h-7 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-            </svg>
-          </div>
-          <p className="text-sm text-slate-600 mb-1">This page is not yet accessible.</p>
-          <p className="text-sm text-slate-600 mb-6">
-            Please pay the developer:{' '}
-            <a
-              href="https://facebook.com/worstcoder.vargas"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[#0054a6] font-semibold hover:underline"
-            >
-              Mark Vargas
-            </a>
-          </p>
-          <button
-            onClick={() => router.push('/')}
-            className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-[#003399] hover:text-white hover:border-[#003399] transition-all"
-          >
-            ← Back to Branch List
-          </button>
-        </div>
-      </div>
-    );
+    return <NotYetAccessible />;
   }
 
   return (
