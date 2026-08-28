@@ -15,7 +15,7 @@
 
 export const BRANCHES = {
   pang: { db: "szk_pang1", label: "Suzuki Auto Pangasinan", active: false },
-  launion: { db: "szk_launion", label: "Suzuki Auto La Union", active: false },
+  launion: { db: "szk_launion", label: "Suzuki Auto La Union", active: true },
   tarlac: { db: "szk_tarlac", label: "Suzuki Auto Tarlac", active: false },
 };
 
