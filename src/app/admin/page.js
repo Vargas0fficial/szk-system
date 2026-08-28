@@ -9,7 +9,19 @@ import AppointmentTable from '@/components/AppointmentTable';
 export default function AdminPage() {
   const [appointments, setAppointments] = useState([]);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [branchLabel, setBranchLabel] = useState('');
   const router = useRouter();
+
+  // Fetch which branch this logged-in admin belongs to, so the navbar
+  // always shows the correct branch name (no static env var needed).
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) setBranchLabel(data.branchLabel);
+      })
+      .catch((err) => console.error("Failed to fetch admin session info:", err));
+  }, []);
 
   useEffect(() => {
     const eventSource = new EventSource('/api/appointments/stream');
@@ -68,9 +80,9 @@ export default function AdminPage() {
               <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest block">
                 Service Management System
               </span>
-              {process.env.NEXT_PUBLIC_BRANCH_NAME && (
+              {branchLabel && (
                 <span className="text-xs font-bold text-[#003399] uppercase tracking-widest block">
-                  {process.env.NEXT_PUBLIC_BRANCH_NAME}
+                  {branchLabel}
                 </span>
               )}
             </div>

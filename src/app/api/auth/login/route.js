@@ -32,8 +32,11 @@ export async function POST(request) {
             });
         }
 
+        // branch is embedded in the token so every subsequent request
+        // automatically knows which branch's database to read/write —
+        // the admin never has to pick it manually.
         const token = jwt.sign(
-            { id: admin._id, username: admin.username },
+            { id: admin._id, username: admin.username, branch: admin.branch },
             process.env.JWT_SECRET,
             { expiresIn: "1d" }
         );

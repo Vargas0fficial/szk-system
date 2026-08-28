@@ -1,8 +1,65 @@
-import { connectDB } from "@/db";
-import Appointment from "@/models/Appointment";
+import { getBranchConnection } from "@/db";
+import { getAppointmentModel } from "@/models/Appointment";
+import { BRANCHES, isValidBranchSlug } from "@/branches";
+import { jwtVerify } from "jose";
+import { cookies } from "next/headers";
+
+// Reads the branch slug straight from the admin's JWT cookie (if logged in).
+// This is the ONLY source of truth for write operations — a logged-in admin
+// can never write to another branch's data by tampering a request, because
+// the branch never comes from anything the client sends.
+async function resolveBranchFromCookie() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("admin_token")?.value;
+  if (!token) return null;
+
+  try {
+    const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+    const { payload } = await jwtVerify(token, secret);
+    return isValidBranchSlug(payload.branch) ? payload.branch : null;
+  } catch {
+    return null;
+  }
+}
+
+// Reads the branch slug from the public ?branch=slug query param, used by
+// the unauthenticated TV display. Validated against the known branch list.
+function resolveBranchFromQuery(request) {
+  const { searchParams } = new URL(request.url);
+  const slug = searchParams.get("branch");
+  return isValidBranchSlug(slug) ? slug : null;
+}
+
+async function getModelForGET(request) {
+  // Prefer the logged-in admin's own branch when a valid session exists —
+  // this is what the admin panel's EventSource call uses (no ?branch= needed).
+  const cookieBranch = await resolveBranchFromCookie();
+  const slug = cookieBranch || resolveBranchFromQuery(request);
+
+  if (!slug) throw new Error("INVALID_BRANCH");
+
+  const conn = await getBranchConnection(BRANCHES[slug].db);
+  return getAppointmentModel(conn);
+}
+
+async function getModelForMutation() {
+  const slug = await resolveBranchFromCookie();
+  if (!slug) throw new Error("UNAUTHENTICATED");
+
+  const conn = await getBranchConnection(BRANCHES[slug].db);
+  return getAppointmentModel(conn);
+}
 
 export async function GET(request) {
-  await connectDB();
+  let Appointment;
+  try {
+    Appointment = await getModelForGET(request);
+  } catch {
+    return new Response(JSON.stringify({ success: false, error: "Invalid or missing branch." }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 
   const encoder = new TextEncoder();
   let changeStream = null;
@@ -98,7 +155,7 @@ export async function GET(request) {
 // ==========================================
 export async function POST(request) {
   try {
-    await connectDB();
+    const Appointment = await getModelForMutation();
     const body = await request.json();
 
     const newAppointment = new Appointment(body);
@@ -109,6 +166,12 @@ export async function POST(request) {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
+    if (error.message === "UNAUTHENTICATED") {
+      return new Response(JSON.stringify({ success: false, error: "Not authenticated" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
     console.error("Failed to save appointment in database:", error);
     return new Response(JSON.stringify({ success: false, error: error.message }), {
       status: 500,
@@ -122,7 +185,7 @@ export async function POST(request) {
 // ==========================================
 export async function PUT(request) {
   try {
-    await connectDB();
+    const Appointment = await getModelForMutation();
     const body = await request.json();
     const { id, status, ...rest } = body;
 
@@ -133,8 +196,6 @@ export async function PUT(request) {
       });
     }
 
-    // Kung status lang — status update lang
-    // Kung may ibang fields — full update
     const updateData = status && Object.keys(rest).length === 0
       ? { status }
       : { ...rest, ...(status && { status }) };
@@ -157,6 +218,12 @@ export async function PUT(request) {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
+    if (error.message === "UNAUTHENTICATED") {
+      return new Response(JSON.stringify({ success: false, error: "Not authenticated" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
     console.error("Failed to update appointment in database:", error);
     return new Response(JSON.stringify({ success: false, error: error.message }), {
       status: 500,
@@ -170,7 +237,7 @@ export async function PUT(request) {
 // ==========================================
 export async function DELETE(request) {
   try {
-    await connectDB();
+    const Appointment = await getModelForMutation();
 
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
@@ -196,6 +263,12 @@ export async function DELETE(request) {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
+    if (error.message === "UNAUTHENTICATED") {
+      return new Response(JSON.stringify({ success: false, error: "Not authenticated" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
     console.error("Failed to delete appointment from database:", error);
     return new Response(JSON.stringify({ success: false, error: error.message }), {
       status: 500,

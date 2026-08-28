@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -45,7 +46,6 @@ export default function LoginPage() {
 
             {/* LEFT SIDE - Image */}
             <div className="hidden lg:flex w-1/2 relative overflow-hidden">
-                {/* Replace src with your actual car image path e.g. /images/car.jpg */}
                 <Image
                     src="/szk-2.png"
                     alt="Suzuki"
@@ -53,10 +53,8 @@ export default function LoginPage() {
                     className="object-cover"
                     priority
                 />
-                {/* Dark overlay */}
                 <div className="absolute inset-0 bg-black/30" />
 
-                {/* Brand text on top of image */}
                 <div className="absolute top-8 left-8">
                     <div className="flex items-center gap-2">
                         <div className="w-1.5 h-12 bg-red-500" />
@@ -154,8 +152,21 @@ export default function LoginPage() {
                         © 2026 Suzuki Motor Corporation. All rights reserved.
                     </p>
 
+                    {/* Back to Appointment Status */}
+                    <div className="flex justify-center mt-5">
+                        <Link
+                            href="/"
+                            className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-slate-600 bg-slate-50 border border-slate-200 rounded-lg hover:bg-[#003399] hover:text-white hover:border-[#003399] hover:shadow-md active:scale-95 transition-all duration-200"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+                            </svg>
+                            Back to Appointment Status
+                        </Link>
+                    </div>
+
                     {/* Buy Me a Coffee */}
-                    <div className="flex flex-col items-center gap-3 mt-8">
+                    <div className="flex flex-col items-center gap-3 mt-5">
                         <a
                             href="https://www.buymeacoffee.com/worstcoder.vargas"
                             target="_blank"
