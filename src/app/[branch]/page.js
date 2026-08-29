@@ -45,6 +45,33 @@ export default function PublicPage({ params }) {
   const { branch } = use(params);
   const branchInfo = BRANCHES[branch];
 
+  const [statusChecked, setStatusChecked] = useState(false);
+  const [isActive, setIsActive] = useState(false);
+  const [activeLabel, setActiveLabel] = useState(branchInfo?.label);
+
+  // Check live active status from the database (not the static config) —
+  // this is what lets toggling a branch on/off via scripts/toggle-branch.js
+  // take effect immediately, without a redeploy.
+  useEffect(() => {
+    if (!branchInfo) {
+      setStatusChecked(true);
+      return;
+    }
+    fetch(`/api/branches/status?slug=${branch}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          setIsActive(data.active);
+          setActiveLabel(data.label);
+        }
+        setStatusChecked(true);
+      })
+      .catch((err) => {
+        console.error("Failed to check branch status:", err);
+        setStatusChecked(true);
+      });
+  }, [branch, branchInfo]);
+
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -73,7 +100,7 @@ export default function PublicPage({ params }) {
   }, []);
 
   useEffect(() => {
-    if (!branchInfo) return;
+    if (!branchInfo || !isActive) return;
     const prev = prevAppointmentsRef.current;
 
     appointments.forEach((appt) => {
@@ -117,7 +144,7 @@ export default function PublicPage({ params }) {
     });
 
     prevAppointmentsRef.current = appointments;
-  }, [appointments, branchInfo, branch]);
+  }, [appointments, branchInfo, branch, isActive]);
 
   useEffect(() => {
     const freshIds = [];
@@ -146,7 +173,7 @@ export default function PublicPage({ params }) {
 
   // SSE Stream — scoped to this branch via ?branch=slug
   useEffect(() => {
-    if (!branchInfo || !branchInfo.active) return;
+    if (!branchInfo || !isActive) return;
 
     let eventSource = null;
     let watchdogTimer = null;
@@ -197,7 +224,7 @@ export default function PublicPage({ params }) {
       if (watchdogTimer) clearTimeout(watchdogTimer);
       delete window.__forceSilentStreamReconnect;
     };
-  }, [branch, branchInfo]);
+  }, [branch, branchInfo, isActive]);
 
   const visibleAppointments = appointments.filter((a) => !hiddenIds.has(a._id));
   const totalPages = Math.max(1, Math.ceil(visibleAppointments.length / pageSize));
@@ -253,9 +280,23 @@ export default function PublicPage({ params }) {
     );
   }
 
+  // Still checking the database for active status — avoid flashing the
+  // "not yet accessible" screen for a split second on a real active branch.
+  if (!statusChecked) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#f4f7fa] font-sans">
+        <div className="flex flex-col items-center gap-5">
+          <img src="/szk.png" alt="Suzuki" className="h-10 w-auto object-contain opacity-90" />
+          <div className="w-8 h-8 border-[3px] border-slate-200 border-t-[#003399] rounded-full animate-spin" />
+          <span className="text-slate-400 text-xs font-medium tracking-wide">Loading...</span>
+        </div>
+      </div>
+    );
+  }
+
   // Branch exists but isn't live yet (not set up / not paid for).
-  if (!branchInfo.active) {
-    return <NotYetAccessible branchLabel={branchInfo.label} />;
+  if (!isActive) {
+    return <NotYetAccessible branchLabel={activeLabel} />;
   }
 
   return (

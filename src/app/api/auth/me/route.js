@@ -1,5 +1,7 @@
 import { jwtVerify } from "jose";
 import { cookies } from "next/headers";
+import { connectDB } from "@/db";
+import BranchStatus from "@/models/BranchStatus";
 import { BRANCHES } from "@/branches";
 
 // Lets the admin UI ask "who am I logged in as, and which branch?" —
@@ -21,7 +23,10 @@ export async function GET() {
         const { payload } = await jwtVerify(token, secret);
         const branchInfo = BRANCHES[payload.branch] || null;
 
-        if (!branchInfo || !branchInfo.active) {
+        await connectDB();
+        const branchStatus = await BranchStatus.findOne({ slug: payload.branch });
+
+        if (!branchInfo || !branchStatus?.active) {
             return new Response(JSON.stringify({
                 success: false,
                 error: "This page is not yet accessible. Please pay the developer: Mark Vargas",

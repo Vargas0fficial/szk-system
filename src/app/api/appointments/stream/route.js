@@ -1,8 +1,15 @@
-import { getBranchConnection } from "@/db";
+import { getBranchConnection, connectDB } from "@/db";
 import { getAppointmentModel } from "@/models/Appointment";
+import BranchStatus from "@/models/BranchStatus";
 import { BRANCHES, isValidBranchSlug } from "@/branches";
 import { jwtVerify } from "jose";
 import { cookies } from "next/headers";
+
+async function isBranchActive(slug) {
+  await connectDB();
+  const record = await BranchStatus.findOne({ slug });
+  return record?.active ?? false;
+}
 
 // Reads the branch slug straight from the admin's JWT cookie (if logged in).
 // This is the ONLY source of truth for write operations — a logged-in admin
@@ -22,7 +29,8 @@ async function resolveBranchFromCookie() {
     const secret = new TextEncoder().encode(process.env.JWT_SECRET);
     const { payload } = await jwtVerify(token, secret);
     if (!isValidBranchSlug(payload.branch)) return null;
-    if (!BRANCHES[payload.branch].active) return null;
+    const active = await isBranchActive(payload.branch);
+    if (!active) return null;
     return payload.branch;
   } catch {
     return null;
