@@ -26,7 +26,7 @@ export default function AdminPage() {
         .then((res) => res.json().then((data) => ({ ok: res.ok, data })))
         .then(({ ok, data }) => {
           if (!ok || !data.success) {
-            setBlockedMessage(data.error || 'This page is not yet accessible. Please pay the developer: Mark Vargas');
+            setBlockedMessage(data.error || 'This page is not yet accessible. Please contact the system administrator for assistance.');
             setBlocked(true);
             // Clear the session so they don't keep landing here on refresh.
             fetch('/api/auth/logout', { method: 'POST' }).catch(() => {});

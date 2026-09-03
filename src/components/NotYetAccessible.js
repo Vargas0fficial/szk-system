@@ -66,8 +66,8 @@ export default function NotYetAccessible({ branchLabel }) {
             </h1>
             <p className="text-sm text-slate-500 mb-6 leading-relaxed">
               {branchLabel
-                ? `The page for ${branchLabel} is currently unavailable. Please reach out to the developer for assistance.`
-                : "The page you are trying to view is currently unavailable. Please reach out to the developer for assistance."}
+                ? `The page for ${branchLabel} is currently unavailable. Please contact the system administrator for assistance.`
+                : "The page you are trying to view is currently unavailable. Please contact the system administrator for assistance."}
             </p>
 
             <Link
@@ -125,19 +125,8 @@ export default function NotYetAccessible({ branchLabel }) {
               <div className="flex gap-3">
                 <div className="w-7 h-7 rounded-full bg-[#003399] text-white text-xs font-bold flex items-center justify-center flex-shrink-0">1</div>
                 <div>
-                  <p className="text-sm font-bold text-slate-800 mb-1">Contact the developer</p>
-                  <p className="text-xs text-slate-500 mb-2">Reach out to explain what page or branch you need activated.</p>
-                  <a
-                    href="https://facebook.com/worstcoder.vargas"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0054a6] hover:underline"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 2C6.477 2 2 6.145 2 11.257c0 2.913 1.454 5.512 3.726 7.21V22l3.405-1.869c.909.251 1.871.386 2.869.386 5.523 0 10-4.145 10-9.257C22 6.145 17.523 2 12 2z" />
-                    </svg>
-                    Message Mark Vargas
-                  </a>
+                  <p className="text-sm font-bold text-slate-800 mb-1">Contact support</p>
+                  <p className="text-xs text-slate-500">Reach out to the system administrator to request access for this branch.</p>
                 </div>
               </div>
 
@@ -145,8 +134,8 @@ export default function NotYetAccessible({ branchLabel }) {
               <div className="flex gap-3">
                 <div className="w-7 h-7 rounded-full bg-[#003399] text-white text-xs font-bold flex items-center justify-center flex-shrink-0">2</div>
                 <div>
-                  <p className="text-sm font-bold text-slate-800 mb-1">Pay the developer</p>
-                  <p className="text-xs text-slate-500">Payment details will be shared once you've reached out.</p>
+                  <p className="text-sm font-bold text-slate-800 mb-1">Complete setup</p>
+                  <p className="text-xs text-slate-500">Any setup requirements will be confirmed with you directly.</p>
                 </div>
               </div>
 

@@ -41,7 +41,7 @@ export async function POST(request) {
         if (!branchStatus?.active) {
             return new Response(JSON.stringify({
                 success: false,
-                error: "This page is not yet accessible. Please pay the developer: Mark Vargas",
+                error: "This page is not yet accessible. Please contact the system administrator for assistance.",
             }), {
                 status: 403,
                 headers: { "Content-Type": "application/json" },
