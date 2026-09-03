@@ -17,23 +17,29 @@ export default function AdminPage() {
 
   // Fetch which branch this logged-in admin belongs to, so the navbar
   // always shows the correct branch name (no static env var needed).
-  // If the branch was deactivated after this admin already logged in,
-  // this also catches that and shows the "not yet accessible" screen
-  // instead of the dashboard.
+  // Polling every 15s also means that if the branch gets deactivated while
+  // this admin is already logged in, they see the "not yet accessible"
+  // screen on their own — no manual reload needed.
   useEffect(() => {
-    fetch('/api/auth/me')
-      .then((res) => res.json().then((data) => ({ ok: res.ok, data })))
-      .then(({ ok, data }) => {
-        if (!ok || !data.success) {
-          setBlockedMessage(data.error || 'This page is not yet accessible. Please pay the developer: Mark Vargas');
-          setBlocked(true);
-          // Clear the session so they don't keep landing here on refresh.
-          fetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
-          return;
-        }
-        setBranchLabel(data.branchLabel);
-      })
-      .catch((err) => console.error("Failed to fetch admin session info:", err));
+    const checkSession = () => {
+      fetch('/api/auth/me')
+        .then((res) => res.json().then((data) => ({ ok: res.ok, data })))
+        .then(({ ok, data }) => {
+          if (!ok || !data.success) {
+            setBlockedMessage(data.error || 'This page is not yet accessible. Please pay the developer: Mark Vargas');
+            setBlocked(true);
+            // Clear the session so they don't keep landing here on refresh.
+            fetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
+            return;
+          }
+          setBranchLabel(data.branchLabel);
+        })
+        .catch((err) => console.error("Failed to fetch admin session info:", err));
+    };
+
+    checkSession();
+    const interval = setInterval(checkSession, 15000);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {

@@ -51,25 +51,34 @@ export default function PublicPage({ params }) {
 
   // Check live active status from the database (not the static config) —
   // this is what lets toggling a branch on/off via scripts/toggle-branch.js
-  // take effect immediately, without a redeploy.
+  // take effect immediately, without a redeploy. Polling every 15s also
+  // means an already-open TV screen picks up the change on its own —
+  // no manual reload needed.
   useEffect(() => {
     if (!branchInfo) {
       setStatusChecked(true);
       return;
     }
-    fetch(`/api/branches/status?slug=${branch}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) {
-          setIsActive(data.active);
-          setActiveLabel(data.label);
-        }
-        setStatusChecked(true);
-      })
-      .catch((err) => {
-        console.error("Failed to check branch status:", err);
-        setStatusChecked(true);
-      });
+
+    const checkStatus = () => {
+      fetch(`/api/branches/status?slug=${branch}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            setIsActive(data.active);
+            setActiveLabel(data.label);
+          }
+          setStatusChecked(true);
+        })
+        .catch((err) => {
+          console.error("Failed to check branch status:", err);
+          setStatusChecked(true);
+        });
+    };
+
+    checkStatus();
+    const interval = setInterval(checkStatus, 15000);
+    return () => clearInterval(interval);
   }, [branch, branchInfo]);
 
   const [appointments, setAppointments] = useState([]);
