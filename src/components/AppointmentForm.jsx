@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 // Auto-suggest service type based on mileage
 const getMileageServiceType = (mileage) => {
@@ -28,6 +28,22 @@ export default function AppointmentForm({ onSuccess }) {
   });
 
   const [submitting, setSubmitting] = useState(false);
+  const [advisors, setAdvisors] = useState([]);
+  const [technicians, setTechnicians] = useState([]);
+
+  // Load this branch's own advisor/technician list (each branch manages
+  // its own via scripts/manage-staff.js — no shared hardcoded list).
+  useEffect(() => {
+    fetch('/api/staff')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          setAdvisors(data.advisors);
+          setTechnicians(data.technicians);
+        }
+      })
+      .catch((err) => console.error("Failed to fetch staff list:", err));
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -144,9 +160,9 @@ export default function AppointmentForm({ onSuccess }) {
             <label className={labelClass}>Service Advisor</label>
             <select name="advisor" value={formData.advisor} onChange={handleChange} className={`${inputClass} text-gray-500`}>
               <option value="" disabled>Select advisor</option>
-              <option value="KENNETH FERNANDEZ">KENNETH FERNANDEZ</option>
-              <option value="MALVIN JASON MENOR">MALVIN JASON MENOR</option>
-              <option value="ADOONIS TAMONDONG">ADOONIS TAMONDONG</option>
+              {advisors.map((name) => (
+                <option key={name} value={name}>{name}</option>
+              ))}
             </select>
           </div>
 
@@ -209,15 +225,14 @@ export default function AppointmentForm({ onSuccess }) {
             <input type="time" name="time" value={formData.time} onChange={handleChange} required className={`${inputClass} text-gray-500`} />
           </div>
 
-          {/* Col 1 Row 4 — Technician (now same width as other fields, no longer spans 3 columns) */}
+          {/* Col 1 Row 4 — Technician */}
           <div style={{ gridColumn: '1', gridRow: '4' }}>
             <label className={labelClass}>Technician</label>
             <select name="technician" value={formData.technician} onChange={handleChange} className={`${inputClass} text-gray-500`}>
               <option value="">Select technician (optional)</option>
-              {/* Add technician names here */}
-              <option value="MARK CERALDE">MARK CERALDE</option>
-              <option value="BONNY VHON">BONNY VHON</option>
-              <option value="PAUL MUÑOZ">PAUL MUÑOZ</option>
+              {technicians.map((name) => (
+                <option key={name} value={name}>{name}</option>
+              ))}
             </select>
           </div>
         </div>
@@ -242,7 +257,7 @@ export default function AppointmentForm({ onSuccess }) {
                 <svg className="animate-spin w-3.5 h-3.5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-                </svg>Z
+                </svg>
                 Scheduling...
               </>
             ) : (

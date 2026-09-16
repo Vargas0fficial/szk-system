@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const STATUS_STYLES = {
   Confirmed: 'bg-green-100 text-green-700 border border-green-200',
@@ -23,6 +23,23 @@ const getMileageServiceType = (mileage) => {
 };
 
 export default function AppointmentTable({ data, onRefresh }) {
+  const [advisors, setAdvisors] = useState([]);
+  const [technicians, setTechnicians] = useState([]);
+
+  // Load this branch's own advisor/technician list (each branch manages
+  // its own via scripts/manage-staff.js — no shared hardcoded list).
+  useEffect(() => {
+    fetch('/api/staff')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          setAdvisors(data.advisors);
+          setTechnicians(data.technicians);
+        }
+      })
+      .catch((err) => console.error("Failed to fetch staff list:", err));
+  }, []);
+
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All Status');
   const [page, setPage] = useState(1);
@@ -486,9 +503,9 @@ export default function AppointmentTable({ data, onRefresh }) {
                 <label className={labelClass}>Service Advisor</label>
                 <select name="advisor" value={editForm.advisor} onChange={handleEditChange} className={`${inputClass} text-gray-500`}>
                   <option value="">Select advisor</option>
-                  <option value="KENNETH FERNANDEZ">KENNETH FERNANDEZ</option>
-                  <option value="MALVIN JASON MENOR">MALVIN JASON MENOR</option>
-                  <option value="ADOONIS TAMONDONG">ADOONIS TAMONDONG</option>
+                  {advisors.map((name) => (
+                    <option key={name} value={name}>{name}</option>
+                  ))}
                 </select>
               </div>
               <div>
@@ -504,10 +521,9 @@ export default function AppointmentTable({ data, onRefresh }) {
                 <label className={labelClass}>Technician</label>
                 <select name="technician" value={editForm.technician} onChange={handleEditChange} className={`${inputClass} text-gray-500`}>
                   <option value="">Select technician (optional)</option>
-                  {/* Add technician names here */}
-                  <option value="MARK CERALDE">MARK CERALDE</option>
-                  <option value="BONNY VHON">BONNY VHON</option>
-                  <option value="PAUL MUÑOZ">PAUL MUÑOZ</option>
+                  {technicians.map((name) => (
+                    <option key={name} value={name}>{name}</option>
+                  ))}
                 </select>
               </div>
               <div className="col-span-2">
