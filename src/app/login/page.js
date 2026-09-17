@@ -141,9 +141,17 @@ export default function LoginPage() {
                         <button
                             onClick={handleLogin}
                             disabled={loading || !username || !password}
-                            className="w-full bg-[#003399] hover:bg-[#0054a6] disabled:opacity-50 text-white font-bold text-base py-3.5 rounded-lg transition-all tracking-wide"
+                            className="w-full bg-[#003399] hover:bg-[#0054a6] disabled:opacity-50 text-white font-bold text-base py-3.5 rounded-lg transition-all tracking-wide flex items-center justify-center gap-1.5"
                         >
-                            {loading ? "Signing in..." : "Login"}
+                            {loading ? (
+                                <>
+                                    <span className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                                    <span className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                                    <span className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                                </>
+                            ) : (
+                                "Login"
+                            )}
                         </button>
                     </div>
 
