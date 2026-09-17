@@ -291,14 +291,68 @@ export default function PublicPage({ params }) {
 
   // Still checking the database for active status — avoid flashing the
   // "not yet accessible" screen for a split second on a real active branch.
+  // Shown as a skeleton of the actual layout instead of a bare spinner.
   if (!statusChecked) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f4f7fa] font-sans">
-        <div className="flex flex-col items-center gap-5">
-          <img src="/szk.png" alt="Suzuki" className="h-10 w-auto object-contain opacity-90" />
-          <div className="w-8 h-8 border-[3px] border-slate-200 border-t-[#003399] rounded-full animate-spin" />
-          <span className="text-slate-400 text-xs font-medium tracking-wide">Loading...</span>
-        </div>
+      <div className="h-screen bg-[#f4f7fa] font-sans flex flex-col overflow-hidden animate-pulse">
+        {/* NAV skeleton */}
+        <nav className="bg-white border-b border-slate-200 shadow-sm flex-shrink-0">
+          <div className="max-w-7xl mx-auto px-6 py-2 flex justify-between items-center">
+            <div className="flex items-center space-x-3">
+              <div className="h-14 w-14 rounded-md bg-slate-200" />
+              <div className="border-l border-slate-300 pl-3 space-y-1.5">
+                <div className="h-2.5 w-40 rounded bg-slate-200" />
+                <div className="h-2.5 w-28 rounded bg-slate-200" />
+              </div>
+            </div>
+            <div className="h-2.5 w-28 rounded bg-slate-200" />
+          </div>
+        </nav>
+
+        {/* MAIN skeleton */}
+        <main className="flex-1 overflow-hidden">
+          <div className="max-w-7xl mx-auto px-6 py-4 w-full h-full flex flex-col">
+            <div className="flex justify-between items-center mb-4">
+              <div className="h-6 w-52 rounded bg-slate-200" />
+              <div className="h-6 w-56 rounded bg-slate-200" />
+            </div>
+
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex-1">
+              {/* table header skeleton */}
+              <div className="bg-slate-200 h-9 w-full" />
+              {/* table rows skeleton */}
+              <div className="divide-y divide-gray-100">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="flex items-center gap-4 px-4 py-3">
+                    <div className="h-3 w-24 rounded bg-slate-100" />
+                    <div className="h-3 w-28 rounded bg-slate-100" />
+                    <div className="h-3 w-20 rounded bg-slate-100" />
+                    <div className="h-3 w-16 rounded bg-slate-100" />
+                    <div className="h-3 w-20 rounded bg-slate-100" />
+                    <div className="h-3 w-16 rounded bg-slate-100" />
+                    <div className="h-3 w-24 rounded bg-slate-100" />
+                    <div className="h-3 w-20 rounded bg-slate-100" />
+                    <div className="h-5 w-16 rounded-full bg-slate-100 ml-auto" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </main>
+
+        {/* FOOTER skeleton */}
+        <footer className="bg-white border-t border-slate-200 flex-shrink-0">
+          <div className="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <div className="h-6 w-20 rounded bg-slate-200" />
+              <div className="space-y-1.5">
+                <div className="h-2 w-32 rounded bg-slate-200" />
+                <div className="h-2 w-24 rounded bg-slate-200" />
+              </div>
+            </div>
+            <div className="h-8 w-24 rounded bg-slate-200" />
+          </div>
+        </footer>
       </div>
     );
   }
