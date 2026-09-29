@@ -1,7 +1,7 @@
 "use client";
 
 export const dynamic = "force-dynamic";
-import { useState, useEffect, useRef, use } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef, use } from 'react';
 import Link from 'next/link';
 import { BRANCHES } from '@/branches';
 import NotYetAccessible from '@/components/NotYetAccessible';
@@ -85,6 +85,13 @@ export default function PublicPage({ params }) {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
+  // Correction applied on top of the estimated pageSize after measuring the
+  // real table: negative = drop rows that overflow, positive = add rows that
+  // still fit (see the measuring effect below).
+  const [sizeAdjust, setSizeAdjust] = useState(0);
+  const overflowAtRef = useRef(Infinity); // smallest page size known to overflow
+  const tableScrollRef = useRef(null);
+  const tableRef = useRef(null);
   const [fade, setFade] = useState(true);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [mounted, setMounted] = useState(false);
@@ -236,7 +243,8 @@ export default function PublicPage({ params }) {
   }, [branch, branchInfo, isActive]);
 
   const visibleAppointments = appointments.filter((a) => !hiddenIds.has(a._id));
-  const totalPages = Math.max(1, Math.ceil(visibleAppointments.length / pageSize));
+  const effectiveSize = Math.max(1, pageSize + sizeAdjust);
+  const totalPages = Math.max(1, Math.ceil(visibleAppointments.length / effectiveSize));
 
   useEffect(() => {
     if (totalPages <= 1) return;
@@ -256,7 +264,64 @@ export default function PublicPage({ params }) {
     setPage(1);
   }, [visibleAppointments.length]);
 
-  const paginated = visibleAppointments.slice((page - 1) * pageSize, page * pageSize);
+  const paginated = visibleAppointments.slice((page - 1) * effectiveSize, page * effectiveSize);
+
+  // Fit the page to the real screen, whatever the device.
+  //
+  // calculatePageSize() only ESTIMATES row height, but real rows get taller
+  // when text wraps (long names, the date, advisor/technician names on
+  // narrower screens). A page of tall rows used to overflow its box (a
+  // scrollbar), while a page of short rows left empty space.
+  //
+  // After every render we measure the real table:
+  //  - if it overflows, drop one row per page and re-check;
+  //  - if it fits with room for one more row, add one and re-check.
+  // overflowAtRef remembers the smallest size that overflowed, so we never
+  // grow back into it (this is what prevents an endless grow/shrink loop).
+  // It all runs before the browser paints, so there is no visible flicker.
+  const measureKey = `${pageSize}|${visibleAppointments.length}`;
+  const lastMeasureKeyRef = useRef(measureKey);
+  useLayoutEffect(() => {
+    // Screen size or row count changed: start over from the estimate.
+    if (lastMeasureKeyRef.current !== measureKey) {
+      lastMeasureKeyRef.current = measureKey;
+      overflowAtRef.current = Infinity;
+      if (sizeAdjust !== 0) {
+        setSizeAdjust(0);
+        return;
+      }
+    }
+
+    const box = tableScrollRef.current;
+    const table = tableRef.current;
+    const tbody = table?.tBodies?.[0];
+    if (!box || !table || !tbody || paginated.length === 0) return;
+
+    const boxHeight = box.clientHeight;
+    const tableHeight = table.offsetHeight;
+
+    // Too tall: remove a row.
+    if (tableHeight > boxHeight + 1) {
+      if (effectiveSize > 1) {
+        overflowAtRef.current = Math.min(overflowAtRef.current, effectiveSize);
+        setSizeAdjust((a) => a - 1);
+      }
+      return;
+    }
+
+    // Fits: add a row only if a full page still has room for another one,
+    // more rows exist, and that size hasn't already been seen to overflow.
+    const avgRowHeight = tbody.offsetHeight / paginated.length;
+    const spare = boxHeight - tableHeight;
+    if (
+      paginated.length === effectiveSize &&
+      effectiveSize < visibleAppointments.length &&
+      effectiveSize + 1 < overflowAtRef.current &&
+      spare >= avgRowHeight
+    ) {
+      setSizeAdjust((a) => a + 1);
+    }
+  });
 
   const formatDateTime = (item) => {
     if (item.date && item.time) {
@@ -411,13 +476,10 @@ export default function PublicPage({ params }) {
             </div>
           </div>
 
-          {/* TABLE with fade transition */}
-          <div
-            className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex-1"
-            style={{ opacity: fade ? 1 : 0, transition: 'opacity 0.6s ease-in-out' }}
-          >
-            <div className="overflow-x-auto h-full">
-              <table className="w-full text-left border-collapse">
+          {/* TABLE — Date & Customer Name stay steady; other columns fade during slideshow transitions */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex-1">
+            <div ref={tableScrollRef} className="overflow-x-auto overflow-y-hidden h-full">
+              <table ref={tableRef} className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-[#003399] text-white text-[10px] font-bold uppercase tracking-wider">
                     <th className="px-3 py-2 text-center">Appointment Date & Time</th>
@@ -446,6 +508,7 @@ export default function PublicPage({ params }) {
                       const formatted = formatDateTime(item);
                       const isHiding = hidingIds.has(item._id);
                       const isNew = newIds.has(item._id);
+                      const fadeStyle = { opacity: fade ? 1 : 0, transition: 'opacity 0.6s ease-in-out' };
                       return (
                         <tr
                           key={item._id}
@@ -464,13 +527,13 @@ export default function PublicPage({ params }) {
                             <span className="text-[10px] text-gray-400">{formatted.time}</span>
                           </td>
                           <td className={`${rowPadding} text-center font-bold text-gray-800 uppercase`}>{item.customer}</td>
-                          <td className={`${rowPadding} text-center font-mono text-gray-600`}>{item.sticker}</td>
-                          <td className={`${rowPadding} text-center text-gray-600`}>{item.model || '—'}</td>
-                          <td className={`${rowPadding} text-center font-mono text-gray-600`}>{item.plate || '—'}</td>
-                          <td className={`${rowPadding} text-center text-gray-600`}>{item.serviceType || 'PMS'}</td>
-                          <td className={`${rowPadding} text-center text-gray-600`}>{item.advisor || '—'}</td>
-                          <td className={`${rowPadding} text-center text-gray-600`}>{item.technician || '—'}</td>
-                          <td className={`${rowPadding} text-center`}>
+                          <td className={`${rowPadding} text-center font-mono text-gray-600`} style={fadeStyle}>{item.sticker}</td>
+                          <td className={`${rowPadding} text-center text-gray-600`} style={fadeStyle}>{item.model || '—'}</td>
+                          <td className={`${rowPadding} text-center font-mono text-gray-600`} style={fadeStyle}>{item.plate || '—'}</td>
+                          <td className={`${rowPadding} text-center text-gray-600`} style={fadeStyle}>{item.serviceType || 'PMS'}</td>
+                          <td className={`${rowPadding} text-center text-gray-600`} style={fadeStyle}>{item.advisor || '—'}</td>
+                          <td className={`${rowPadding} text-center text-gray-600`} style={fadeStyle}>{item.technician || '—'}</td>
+                          <td className={`${rowPadding} text-center`} style={fadeStyle}>
                             <span className={`inline-block px-2.5 py-0.5 rounded text-[10px] font-semibold ${STATUS_STYLES[status] || STATUS_STYLES['Pending']}`}>
                               {status}
                             </span>
@@ -492,7 +555,7 @@ export default function PublicPage({ params }) {
         {totalPages > 1 && (
           <div className="border-b border-gray-100 px-6 py-1.5 flex justify-between items-center max-w-7xl mx-auto w-full">
             <p className="text-[11px] text-gray-400">
-              Showing {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, visibleAppointments.length)} of {visibleAppointments.length} entries
+              Showing {(page - 1) * effectiveSize + 1}–{Math.min(page * effectiveSize, visibleAppointments.length)} of {visibleAppointments.length} entries
             </p>
             <div className="flex items-center gap-1.5">
               {Array.from({ length: totalPages }).map((_, i) => (
