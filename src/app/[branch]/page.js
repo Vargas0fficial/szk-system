@@ -321,7 +321,13 @@ export default function PublicPage({ params }) {
     ) {
       setSizeAdjust((a) => a + 1);
     }
-  });
+    // Only re-measure when something that could change the table's height
+    // actually changed — page, screen-size estimate, row count, or our own
+    // sizeAdjust correction. Without this array the effect reruns on EVERY
+    // render, including the once-a-second clock tick and the slideshow's
+    // fade toggling, which was fighting the fade transition and causing
+    // the glitch.
+  }, [page, pageSize, sizeAdjust, visibleAppointments.length]);
 
   const formatDateTime = (item) => {
     if (item.date && item.time) {
@@ -476,8 +482,13 @@ export default function PublicPage({ params }) {
             </div>
           </div>
 
-          {/* TABLE — Date & Customer Name stay steady; other columns fade during slideshow transitions */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex-1">
+          {/* TABLE with fade transition — applied to the whole box, not
+              individual cells, because cells remount on every page change
+              (new key={item._id}) and can't animate a transition on mount. */}
+          <div
+            className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex-1"
+            style={{ opacity: fade ? 1 : 0, transition: 'opacity 0.6s ease-in-out' }}
+          >
             <div ref={tableScrollRef} className="overflow-x-auto overflow-y-hidden h-full">
               <table ref={tableRef} className="w-full text-left border-collapse">
                 <thead>
@@ -508,7 +519,6 @@ export default function PublicPage({ params }) {
                       const formatted = formatDateTime(item);
                       const isHiding = hidingIds.has(item._id);
                       const isNew = newIds.has(item._id);
-                      const fadeStyle = { opacity: fade ? 1 : 0, transition: 'opacity 0.6s ease-in-out' };
                       return (
                         <tr
                           key={item._id}
@@ -527,13 +537,13 @@ export default function PublicPage({ params }) {
                             <span className="text-[10px] text-gray-400">{formatted.time}</span>
                           </td>
                           <td className={`${rowPadding} text-center font-bold text-gray-800 uppercase`}>{item.customer}</td>
-                          <td className={`${rowPadding} text-center font-mono text-gray-600`} style={fadeStyle}>{item.sticker}</td>
-                          <td className={`${rowPadding} text-center text-gray-600`} style={fadeStyle}>{item.model || '—'}</td>
-                          <td className={`${rowPadding} text-center font-mono text-gray-600`} style={fadeStyle}>{item.plate || '—'}</td>
-                          <td className={`${rowPadding} text-center text-gray-600`} style={fadeStyle}>{item.serviceType || 'PMS'}</td>
-                          <td className={`${rowPadding} text-center text-gray-600`} style={fadeStyle}>{item.advisor || '—'}</td>
-                          <td className={`${rowPadding} text-center text-gray-600`} style={fadeStyle}>{item.technician || '—'}</td>
-                          <td className={`${rowPadding} text-center`} style={fadeStyle}>
+                          <td className={`${rowPadding} text-center font-mono text-gray-600`}>{item.sticker}</td>
+                          <td className={`${rowPadding} text-center text-gray-600`}>{item.model || '—'}</td>
+                          <td className={`${rowPadding} text-center font-mono text-gray-600`}>{item.plate || '—'}</td>
+                          <td className={`${rowPadding} text-center text-gray-600`}>{item.serviceType || 'PMS'}</td>
+                          <td className={`${rowPadding} text-center text-gray-600`}>{item.advisor || '—'}</td>
+                          <td className={`${rowPadding} text-center text-gray-600`}>{item.technician || '—'}</td>
+                          <td className={`${rowPadding} text-center`}>
                             <span className={`inline-block px-2.5 py-0.5 rounded text-[10px] font-semibold ${STATUS_STYLES[status] || STATUS_STYLES['Pending']}`}>
                               {status}
                             </span>
